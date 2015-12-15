@@ -44,7 +44,7 @@ public class FestivalDbHelper extends SQLiteOpenHelper{
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + FestivalContract.LocationEntry.TABLE_NAME + " (" +
                 FestivalContract.LocationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FestivalContract.LocationEntry.COLUMN_CITY + " TEXT UNIQUE NOT NULL," +
-                FestivalContract.LocationEntry.COLUMN_COUNTRY + " TEXT NUL NULL," +
+                FestivalContract.LocationEntry.COLUMN_COUNTRY + " TEXT NOT NULL," +
                 FestivalContract.LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL," +
                 FestivalContract.LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL" +
                 ");";

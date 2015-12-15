@@ -13,11 +13,27 @@ public class TestUtilities extends AndroidTestCase{
     static final long TEST_START_DATE = 1451001600000L; //  12/25/2015
     static final long TEST_END_DATE = 1451088000000L; //    12/26/2015
 
-    static ContentValues createAmsterdamLocationValues(){
+    /*
+    static void validateCurrentRecord(String error, Cursor valueCursor, ContentValues expectedValues) {
+        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
+        for (Map.Entry<String, Object> entry : valueSet) {
+            String columnName = entry.getKey();
+            int idx = valueCursor.getColumnIndex(columnName);
+            assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
+            String expectedValue = entry.getValue().toString();
+            assertEquals("Value '" + entry.getValue().toString() +
+                    "' did not match the expected value '" +
+                    expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
+        }
+    }
+    */
+
+
+    static ContentValues createLocationValues(){
         ContentValues testValues = new ContentValues();
         testValues.put(FestivalContract.LocationEntry.COLUMN_COUNTRY, COUNTRY);
         testValues.put(FestivalContract.LocationEntry.COLUMN_CITY, CITY);
-        testValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LAT, 52.37403);
+        testValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LAT, 52.374030);
         testValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LONG, 4.8896900);
         return testValues;
     };
