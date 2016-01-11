@@ -8,8 +8,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class FestivalProvider extends ContentProvider{
+
+    public static final String LOG_TAG = FestivalProvider.class.getSimpleName();
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private FestivalDbHelper mOpenHelper;
@@ -22,12 +25,14 @@ public class FestivalProvider extends ContentProvider{
 
     static final int VENUES = 200;
     static final int VENUE = 201;
+    static final int VENUE_WITH_LOCATION = 202;
 
     static final int LOCATIONS = 300;
     static final int LOCATION = 301;
 
     private static final SQLiteQueryBuilder sEventByVenueSettingQueryBuilder;
-
+    private static final SQLiteQueryBuilder sVenueByLocationSettingQueryBuilder;
+    //Creates JOIN between Event and Venue Tables
     static {
         sEventByVenueSettingQueryBuilder = new SQLiteQueryBuilder();
         sEventByVenueSettingQueryBuilder.setTables(
@@ -39,6 +44,20 @@ public class FestivalProvider extends ContentProvider{
                         "." + FestivalContract.VenueEntry._ID);
 
     }
+
+    static {
+        sVenueByLocationSettingQueryBuilder = new SQLiteQueryBuilder();
+        sEventByVenueSettingQueryBuilder.setTables(
+                FestivalContract.VenueEntry.TABLE_NAME + " INNER JOIN " +
+                        FestivalContract.LocationEntry.TABLE_NAME +
+                        " ON " + FestivalContract.VenueEntry.TABLE_NAME +
+                        "." + FestivalContract.VenueEntry.COLUMN_LOCATION_KEY +
+                        " = " + FestivalContract.LocationEntry.TABLE_NAME +
+                        "." + FestivalContract.LocationEntry._ID);
+    }
+
+    private static final String sVenueSettingSelection =
+            FestivalContract.VenueEntry.TABLE_NAME + "." + FestivalContract.VenueEntry.COLUMN_VENUE_NAME + " = ? ";
 
     //location.location_setting = ?
     private static final String sLocationSettingSelection =
@@ -68,31 +87,26 @@ public class FestivalProvider extends ContentProvider{
         matcher.addURI(authority, FestivalContract.PATH_EVENT, EVENTS);
 
         //matches '/event/id'
-        matcher.addURI(authority, FestivalContract.PATH_EVENT + "/#", EVENT);
+        //matcher.addURI(authority, FestivalContract.PATH_EVENT + "/#", EVENT);
 
-        //matches '/event/id/venue/id'
-        matcher.addURI(authority, FestivalContract.PATH_EVENT
-                + "/#/*", EVENT_WITH_VENUE);
+        //matches '/event/venue_name'
+        matcher.addURI(authority, FestivalContract.PATH_EVENT + "/*", EVENT_WITH_VENUE);
 
         //matches '/event/id/venue/id/date'
-        matcher.addURI(authority, FestivalContract.PATH_EVENT
-                        + "/#" + FestivalContract.PATH_VENUE + "/*/#", EVENT_WITH_VENUE_AND_DATE);
+        //matcher.addURI(authority, FestivalContract.PATH_EVENT+ "/#/" + FestivalContract.PATH_VENUE + "/*/#", EVENT_WITH_VENUE_AND_DATE);
 
         //matches '/venue'
-        matcher.addURI(authority, FestivalContract.PATH_VENUE
-        + "/#", VENUES);
+        matcher.addURI(authority, FestivalContract.PATH_VENUE, VENUES);
 
         //matches '/venue/id'
-        matcher.addURI(authority, FestivalContract.PATH_VENUE
-                + "/#", VENUE);
+      //  matcher.addURI(authority, FestivalContract.PATH_VENUE
+       //         + "/#", VENUE);
+
+        //matches '/venue/location_name'
+        matcher.addURI(authority, FestivalContract.PATH_VENUE + "/*", VENUE_WITH_LOCATION);
 
         //matches '/location'
-        matcher.addURI(authority, FestivalContract.PATH_LOCATION
-                + "/#", LOCATIONS);
-
-        //matches '/location/id'
-        matcher.addURI(authority, FestivalContract.PATH_LOCATION
-                + "/#", LOCATION);
+        matcher.addURI(authority, FestivalContract.PATH_LOCATION, LOCATIONS);
 
         return matcher;
     }
@@ -102,6 +116,12 @@ public class FestivalProvider extends ContentProvider{
         final int match = sUriMatcher.match(uri);
 
         switch(match){
+
+            case EVENT_WITH_VENUE:
+                return FestivalContract.EventEntry.CONTENT_TYPE;
+            case VENUE_WITH_LOCATION:
+                return FestivalContract.VenueEntry.CONTENT_TYPE;
+
             case EVENTS:
                 return FestivalContract.EventEntry.CONTENT_TYPE;
             case EVENT:
@@ -110,7 +130,7 @@ public class FestivalProvider extends ContentProvider{
             case VENUES:
                 return FestivalContract.VenueEntry.CONTENT_TYPE;
             case VENUE:
-                return FestivalContract.LocationEntry.CONTENT_ITEM_TYPE;
+                return FestivalContract.VenueEntry.CONTENT_ITEM_TYPE;
 
             case LOCATIONS:
                 return FestivalContract.LocationEntry.CONTENT_TYPE;
@@ -122,9 +142,11 @@ public class FestivalProvider extends ContentProvider{
         }
     }
 
+    @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                          String sortOrder){
         Cursor retCursor;
+        Log.v(LOG_TAG, "Query: Uri Matched to " + sUriMatcher.match(uri));
         switch (sUriMatcher.match(uri)) {
             case EVENTS:
             {
@@ -162,6 +184,12 @@ public class FestivalProvider extends ContentProvider{
                 break;
             }
 
+            case VENUE_WITH_LOCATION:
+            {
+                retCursor = getVenueByLocation(uri, projection, sortOrder);
+                break;
+            }
+
             case LOCATIONS:
             {
                 retCursor = mOpenHelper.getReadableDatabase().query(
@@ -179,24 +207,23 @@ public class FestivalProvider extends ContentProvider{
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
+        //Watches for changes to the uri and notifies cursor when it happens
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+
         return retCursor;
     }
 
     private Cursor getEventByVenue(Uri uri, String[] projection, String sortOrder){
         String venue = FestivalContract.EventEntry.getVenueFromUri(uri);
-        long startDate = FestivalContract.EventEntry.getDateFromUri(uri);
 
         String[] selectionArgs;
         String selection;
 
-        if (startDate == 0){
-            selection = sLocationSettingSelection;
-            selectionArgs = new String[]{venue};
-        }
-        else {
-            selection = sLocationSettingWithStartDateSelection;
-            selectionArgs = new String[]{venue, Long.toString(startDate)};
-        }
+        //selection = null;
+        //selectionArgs = null;
+        selection = sVenueSettingSelection;
+        selectionArgs = new String[]{venue};
+
 
         return sEventByVenueSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
@@ -208,6 +235,27 @@ public class FestivalProvider extends ContentProvider{
                 );
     }
 
+    private Cursor getVenueByLocation(Uri uri, String[] projection, String sortOrder){
+        String location = FestivalContract.VenueEntry.getLocationFromUri(uri);
+
+        String[] selectionArgs;
+        String selection;
+
+
+        selection = sLocationSettingSelection;
+        selectionArgs = new String[]{location};
+
+
+        return sVenueByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -215,17 +263,24 @@ public class FestivalProvider extends ContentProvider{
         Uri returnUri;
 
         switch(match){
-            case EVENT: {
+            case EVENTS: {
                 long _id = db.insert(FestivalContract.EventEntry.TABLE_NAME, null, values);
                 if (_id > 0) returnUri = FestivalContract.EventEntry.buildEventUri(_id);
                 else throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
 
-            case VENUE: {
+            case VENUES: {
                 long _id = db.insert(FestivalContract.VenueEntry.TABLE_NAME, null, values);
                 if (_id > 0) returnUri = FestivalContract.VenueEntry.buildVenueUri(_id);
-                else throw new android.database.SQLException("Failed to insert row into + uri");
+                else throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+
+            case LOCATIONS: {
+                long _id = db.insert(FestivalContract.LocationEntry.TABLE_NAME, null, values);
+                if (_id > 0) returnUri = FestivalContract.LocationEntry.buildLocationUri(_id);
+                else throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
 
@@ -249,14 +304,15 @@ public class FestivalProvider extends ContentProvider{
         if (null == selection) selection = "1";
 
         switch(match){
-            case EVENT: {
+            case EVENTS: {
                 rowsUpdated = db.update(FestivalContract.EventEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             }
-            case VENUE: {
+            case VENUES: {
                 rowsUpdated = db.update(FestivalContract.VenueEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
             }
-            case LOCATION: {
+            case LOCATIONS: {
                 rowsUpdated = db.update(FestivalContract.LocationEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             }
@@ -280,20 +336,21 @@ public class FestivalProvider extends ContentProvider{
         final int match = sUriMatcher.match(uri);
         int rowsDeleted;
 
+        //This makes delete all rows return the number of rows deleted
         if (null == selection ) selection = "1";
 
         switch (match) {
-            case EVENT: {
+            case EVENTS: {
                 rowsDeleted = db.delete(FestivalContract.EventEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             }
 
-            case VENUE: {
+            case VENUES: {
                 rowsDeleted = db.delete(FestivalContract.VenueEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             }
 
-            case LOCATION: {
+            case LOCATIONS: {
                 rowsDeleted = db.delete(FestivalContract.LocationEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             }
@@ -307,6 +364,8 @@ public class FestivalProvider extends ContentProvider{
         if (rowsDeleted != 0){
             getContext().getContentResolver().notifyChange(uri, null);
         }
+
+        db.close();
 
         return rowsDeleted;
     }

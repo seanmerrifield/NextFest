@@ -125,10 +125,10 @@ public class TestDb extends AndroidTestCase {
         assertTrue("Error: No records returned from venue query", cursor.moveToFirst());
 
         //TEST: Validate location entries
-        //TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", cursor, testValues);
+        //TestUtilities.validateCurrentRecord("Error: Venue Query Validation Failed", cursor, testValues);
 
         //TEST: Validate only one row was created
-        assertFalse("Error: More than one record return from location query", cursor.moveToNext());
+        assertFalse("Error: More than one record return from venue query", cursor.moveToNext());
 
         cursor.close();
         db.close();

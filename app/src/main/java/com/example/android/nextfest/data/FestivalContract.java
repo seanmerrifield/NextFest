@@ -18,8 +18,6 @@ public class FestivalContract {
     public static final String PATH_VENUE = "venue";
 
 
-
-
     public static final class EventEntry implements BaseColumns {
         public static final String TABLE_NAME = "event";
 
@@ -41,7 +39,7 @@ public class FestivalContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        // builds '/event/venue' path
+        // builds '/event/venue_name' path
         public static Uri buildEventVenue(String venueSetting) {
             return CONTENT_URI.buildUpon().appendPath(venueSetting).build();
         }
@@ -82,8 +80,9 @@ public class FestivalContract {
         }
 
 
-
-
+        public static String getLocationFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
     }
 
     public static final class LocationEntry implements BaseColumns {

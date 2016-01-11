@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -29,7 +30,20 @@ public class FestivalActivityFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
-        inflater.inflate(R.menu.menu_festival, menu);
+        inflater.inflate(R.menu.festivalfragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+        if (id == R.id.action_refresh){
+            FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity(),mFestivalAdapter);
+            festivalTask.execute("31366");
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+
     }
 
     @Override
@@ -55,22 +69,24 @@ public class FestivalActivityFragment extends Fragment {
 
         listView.setAdapter(mFestivalAdapter);
 
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        /*
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String festival = mFestivalAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), FestivalDetailActivity.class)
+
+              String festival = mFestivalAdapter.getItem(position);
+               Intent intent = new Intent(getActivity(), FestivalDetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, festival);
                 startActivity(intent);
             }
-        });*/
-
+        });
+           */
         return rootView;
     }
 
     private void updateFestivals(){
         FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity(),mFestivalAdapter);
-        festivalTask.execute();
+        festivalTask.execute("31366");
     }
 
     @Override
@@ -79,4 +95,6 @@ public class FestivalActivityFragment extends Fragment {
         updateFestivals();
 
     }
+
+
 }
