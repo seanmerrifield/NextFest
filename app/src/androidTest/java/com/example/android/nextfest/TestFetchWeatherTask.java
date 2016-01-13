@@ -20,7 +20,7 @@ public class TestFetchWeatherTask extends AndroidTestCase {
                 FestivalContract.LocationEntry.COLUMN_CITY + " = ?",
                 new String[]{ADD_LOCATION_CITY});
 
-        FetchFestivalTask task = new FetchFestivalTask(getContext(), null);
+        FetchFestivalTask task = new FetchFestivalTask(getContext());
         long locationId = task.addLocation(ADD_LOCATION_CITY, ADD_LOCATION_COUNTRY, ADD_LOCATION_LAT, ADD_LOCATION_LON);
 
         assertFalse("Error: addLocation returned an invalid ID on insert", locationId == -1);

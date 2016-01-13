@@ -1,22 +1,42 @@
 package com.example.android.nextfest;
 
+
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
+import com.example.android.nextfest.data.FestivalContract;
 
 
-public class FestivalActivityFragment extends Fragment {
+public class FestivalActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
-    private ArrayAdapter<String> mFestivalAdapter;
+    private static final int FESTIVAL_LOADER = 0;
+    private FestivalAdapter mFestivalAdapter;
+
+    private static final String[] EVENT_COLUMNS = {
+            FestivalContract.EventEntry.TABLE_NAME + "." + FestivalContract.EventEntry._ID,
+            FestivalContract.EventEntry.COLUMN_VENUE_KEY,
+            FestivalContract.EventEntry.COLUMN_EVENT_NAME,
+            FestivalContract.EventEntry.COLUMN_START_DATE,
+            FestivalContract.EventEntry.COLUMN_END_DATE
+    };
+
+    static final int COL_EVENT_ID = 0;
+    static final int COL_VENUE_ID = 1;
+    static final int COL_EVENt_NAME = 2;
+    static final int COL_START_DATE = 3;
+    static final int COL_END_DATE = 4;
+
 
     public FestivalActivityFragment() {
     }
@@ -37,8 +57,7 @@ public class FestivalActivityFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
         if (id == R.id.action_refresh){
-            FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity(),mFestivalAdapter);
-            festivalTask.execute("31366");
+            updateFestivals();
             return true;
         }
 
@@ -51,19 +70,8 @@ public class FestivalActivityFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_festival, container, false);
 
-        ArrayList<String> test_festivals = new ArrayList<String>();
-        test_festivals.add("EDC - Las Vegas - Jun 2015");
-        test_festivals.add("Coachella - California - Apr 2015");
-        test_festivals.add("Tomorrowland - Belgium - Jul 2015");
 
-
-       mFestivalAdapter = new ArrayAdapter<String>(
-                //sets context
-                getActivity(),
-                R.layout.list_item_festival,
-                R.id.list_item_festival_textview,
-                test_festivals
-        );
+        mFestivalAdapter = new FestivalAdapter(getActivity(), null, 0);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_festival);
 
@@ -84,8 +92,16 @@ public class FestivalActivityFragment extends Fragment {
         return rootView;
     }
 
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState){
+        getLoaderManager().initLoader(FESTIVAL_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+
     private void updateFestivals(){
-        FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity(),mFestivalAdapter);
+        FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity());
         festivalTask.execute("31366");
     }
 
@@ -94,6 +110,33 @@ public class FestivalActivityFragment extends Fragment {
         super.onStart();
         updateFestivals();
 
+    }
+
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle){
+
+        String sortOrder = FestivalContract.EventEntry.COLUMN_START_DATE + " ASC";
+
+        return new CursorLoader(getActivity(),
+                FestivalContract.EventEntry.CONTENT_URI,
+                EVENT_COLUMNS,
+                null,
+                null,
+                sortOrder
+                );
+
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor){
+        mFestivalAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader){
+        mFestivalAdapter.swapCursor(null);
     }
 
 

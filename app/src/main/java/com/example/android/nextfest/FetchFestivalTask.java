@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import com.example.android.nextfest.data.FestivalContract;
 
@@ -22,40 +21,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Vector;
 
-public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
+public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
     private final String LOG_TAG = FetchFestivalTask.class.getSimpleName();
 
-    private final ArrayAdapter<String> mFestivalAdapter;
     private final Context mContext;
 
     //Initialize instance variables in constructor
-    public FetchFestivalTask(Context context, ArrayAdapter<String> festivalAdapter){
+    public FetchFestivalTask(Context context){
         mContext = context;
-        mFestivalAdapter = festivalAdapter;
     }
 
-
-    private Calendar formatDateString(String dateStr, String format){
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-
-        Calendar cal = new GregorianCalendar();
-
-        try {
-            cal.setTime(dateFormat.parse(dateStr));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        return cal;
-    }
 
     long addLocation(String cityName, String countryName, double lat, double lon){
         long locationId;
@@ -127,7 +105,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
         return locationString.split(delims);
     }
 
-    public String[] getFestivalDataFromJson(String festivalJsonStr){
+    public void getFestivalDataFromJson(String festivalJsonStr){
 
         final String POPULARITY_KEY = "popularity";
         final String VENUE_KEY = "venue";
@@ -140,7 +118,6 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
         final String START_TIME_KEY = "start";
         final String DATE_KEY = "date";
         final String TIME_KEY = "time";
-
 
         final String RESULTS_PAGE_KEY = "resultsPage";
         final String RESULTS_KEY = "results";
@@ -188,7 +165,8 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
                 String eventName = eventJson.getString(NAME_KEY);
                 double popularity = eventJson.getDouble(POPULARITY_KEY);
                 String dateStr = dateJson.getString(DATE_KEY);
-                Calendar cal = formatDateString(dateStr, "yyyy-MM-dd");
+                long dateLong = Utility.formatDatetoLong(dateStr, "yyyy-MM-dd");
+
 
                 //VENUE DATA
                 String venue = venueJson.getString(NAME_KEY);
@@ -211,13 +189,13 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
 
                 eventValues.put(FestivalContract.EventEntry.COLUMN_VENUE_KEY, venueId);
                 eventValues.put(FestivalContract.EventEntry.COLUMN_EVENT_NAME, eventName);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_START_DATE, dateStr);
+                eventValues.put(FestivalContract.EventEntry.COLUMN_START_DATE, dateLong);
                 //Need to fix end date string
-                eventValues.put(FestivalContract.EventEntry.COLUMN_END_DATE, dateStr);
+                eventValues.put(FestivalContract.EventEntry.COLUMN_END_DATE, dateLong);
 
                 cVVector.add(eventValues);
 
-                resultStrs[i] = dateStr + " - " + headliner + " - " + venue;
+                resultStrs[i] = dateLong + " - " + headliner + " - " + venue;
 
             }
 
@@ -234,8 +212,6 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
             Log.d(LOG_TAG, insertCount + " out of " + cVVector.size() + " successfully inserted.");
 
 
-            return resultStrs;
-
 
         }
         catch(JSONException e){
@@ -243,11 +219,10 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
             e.printStackTrace();
         }
 
-        return null;
     };
 
    @Override
-    protected String[] doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
 
        if (params.length == 0){
            return null;
@@ -306,14 +281,18 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
            }
 
            festivalJsonStr = buffer.toString();
-
+           getFestivalDataFromJson(festivalJsonStr);
 
        }
        catch (IOException e){
            Log.e(LOG_TAG, "Error ", e);
-           return null;
        }
-
+       /*
+        catch (JSONException e){
+            Log.e(LOG_TAG,  e.getMessage(), e);
+            e.printStackTrace();
+        }
+        */
        //Close all connections and the reader
        finally{
            if (urlConnection != null){
@@ -328,12 +307,10 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
                }
            }
        }
-
-       return getFestivalDataFromJson(festivalJsonStr);
-
+        return null;
    }
 
-
+/*
     @Override
     protected void onPostExecute(String[] result) {
         if (result != null){
@@ -343,5 +320,5 @@ public class FetchFestivalTask extends AsyncTask<String, Void, String[]> {
             }
         }
     }
-
+*/
 }
