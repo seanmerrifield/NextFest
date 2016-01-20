@@ -66,12 +66,12 @@ public class FestivalProvider extends ContentProvider{
     //location.location_setting = ? AND date = ?
     private static final String sLocationSettingWithDate =
             FestivalContract.LocationEntry.TABLE_NAME + "." + FestivalContract.LocationEntry.COLUMN_CITY + " = ?" +
-                    " AND " + FestivalContract.EventEntry.COLUMN_START_DATE + " = ? ";
+                    " AND " + FestivalContract.EventEntry.COLUMN_DATE + " = ? ";
 
     //location.location_setting = ? AND date >= ?
     private static final String sLocationSettingWithStartDateSelection =
             FestivalContract.LocationEntry.TABLE_NAME + "." + FestivalContract.LocationEntry.COLUMN_CITY + " = ?" +
-                    " AND " + FestivalContract.EventEntry.COLUMN_START_DATE + " >= ? ";
+                    " AND " + FestivalContract.EventEntry.COLUMN_DATE + " >= ? ";
 
     @Override
     public boolean onCreate(){
@@ -150,6 +150,7 @@ public class FestivalProvider extends ContentProvider{
         switch (sUriMatcher.match(uri)) {
             case EVENTS:
             {
+                Log.d(LOG_TAG, "Uri Matcher: EVENTS");
                 retCursor = mOpenHelper.getReadableDatabase().query(
                 FestivalContract.EventEntry.TABLE_NAME,
                         projection,
@@ -164,13 +165,17 @@ public class FestivalProvider extends ContentProvider{
 
             case EVENT_WITH_VENUE:
             {
+                Log.d(LOG_TAG, "Uri Matcher: EVENT_WITH_VENUE");
                 retCursor = getEventByVenue(uri, projection, sortOrder);
+                retCursor.moveToFirst();
+                Log.d(LOG_TAG, "Returned: " + retCursor.getCount());
                 break;
             }
 
 
             case VENUES:
             {
+                Log.d(LOG_TAG, "Uri Matcher: VENUES");
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         FestivalContract.VenueEntry.TABLE_NAME,
                         projection,
@@ -186,12 +191,14 @@ public class FestivalProvider extends ContentProvider{
 
             case VENUE_WITH_LOCATION:
             {
+                Log.d(LOG_TAG, "Uri Matcher: VENUE_WITH_LOCATION");
                 retCursor = getVenueByLocation(uri, projection, sortOrder);
                 break;
             }
 
             case LOCATIONS:
             {
+                Log.d(LOG_TAG, "Uri Matcher: LOCATIONS");
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         FestivalContract.LocationEntry.TABLE_NAME,
                         projection,
@@ -213,7 +220,7 @@ public class FestivalProvider extends ContentProvider{
         return retCursor;
     }
 
-    private Cursor getEventByVenue(Uri uri, String[] projection, String sortOrder){
+    public Cursor getEventByVenue(Uri uri, String[] projection, String sortOrder){
         String venue = FestivalContract.EventEntry.getVenueFromUri(uri);
 
         String[] selectionArgs;

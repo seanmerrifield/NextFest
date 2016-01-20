@@ -4,11 +4,14 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import java.util.HashSet;
 
 
 public class TestDb extends AndroidTestCase {
+
+
     public static final String LOG_TAG = TestDb.class.getSimpleName();
 
     void deleteDatabase() {
@@ -39,6 +42,9 @@ public class TestDb extends AndroidTestCase {
         } while (c.moveToNext());
         assertTrue("Database was created without multiple tables", tableNameHashSet.isEmpty());
 
+
+        ///// TESTS FOR LOCATION TABLE /////
+
         //TEST: New Database allows access to tables
         c = db.rawQuery("PRAGMA table_info(" + FestivalContract.LocationEntry.TABLE_NAME + ")", null);
         assertTrue("Error: Unable to query the database for table information.", c.moveToFirst());
@@ -46,6 +52,7 @@ public class TestDb extends AndroidTestCase {
         //TEST: New Database Location Table contains all columns
         final HashSet<String> locationColumnHashSet = new HashSet<String>();
         locationColumnHashSet.add(FestivalContract.LocationEntry._ID);
+        locationColumnHashSet.add(FestivalContract.LocationEntry.COLUMN_LOCATION_SETTING);
         locationColumnHashSet.add(FestivalContract.LocationEntry.COLUMN_CITY);
         locationColumnHashSet.add(FestivalContract.LocationEntry.COLUMN_COUNTRY);
         locationColumnHashSet.add(FestivalContract.LocationEntry.COLUMN_COORD_LAT);
@@ -59,9 +66,53 @@ public class TestDb extends AndroidTestCase {
         } while(c.moveToNext());
 
         assertTrue("Error: The database doesn't contain all of the required location entry columns", locationColumnHashSet.isEmpty());
+
+        //// TESTS FOR VENUE TABLE ////
+
+        c = db.rawQuery("PRAGMA table_info(" + FestivalContract.VenueEntry.TABLE_NAME + ")", null);
+        assertTrue("Error: Unable to query the database for table information.", c.moveToFirst());
+
+        final HashSet<String> venueColumnHashSet = new HashSet<String>();
+        venueColumnHashSet.add(FestivalContract.VenueEntry._ID);
+        venueColumnHashSet.add(FestivalContract.VenueEntry.COLUMN_VENUE_NAME);
+        venueColumnHashSet.add(FestivalContract.VenueEntry.COLUMN_LOCATION_KEY);
+
+        columnNameIndex = c.getColumnIndex("name");
+        do {
+            String columnName = c.getString(columnNameIndex);
+            venueColumnHashSet.remove(columnName);
+
+        } while(c.moveToNext());
+
+
+        c = db.rawQuery("PRAGMA table_info(" + FestivalContract.VenueEntry.TABLE_NAME + ")", null);
+        assertTrue("Error: Unable to query the database for table information.", c.moveToFirst());
+
+
+        final HashSet<String> eventColumnHashSet = new HashSet<String>();
+        eventColumnHashSet.add(FestivalContract.EventEntry._ID);
+        eventColumnHashSet.add(FestivalContract.EventEntry.COLUMN_VENUE_KEY);
+        eventColumnHashSet.add(FestivalContract.EventEntry.COLUMN_EVENT_NAME);
+        eventColumnHashSet.add(FestivalContract.EventEntry.COLUMN_DATE);
+        eventColumnHashSet.add(FestivalContract.EventEntry.COLUMN_TIME);
+        eventColumnHashSet.add(FestivalContract.EventEntry.COLUMN_HEADLINER);
+
+        columnNameIndex = c.getColumnIndex("name");
+        do {
+            String columnName = c.getString(columnNameIndex);
+            eventColumnHashSet.remove(columnName);
+
+        } while(c.moveToNext());
+
+
         db.close();
 
     }
+
+
+    public void testLocationTable(){ insertLocation(); }
+
+    public void testVenueTable(){ insertVenue(); }
 
     public void testEventTable(){
         long venueRowID = insertVenue();
@@ -88,7 +139,7 @@ public class TestDb extends AndroidTestCase {
         assertTrue("Error: No records returned from database", cursor.moveToFirst());
 
         //TEST: Validate record
-        //TestUtilities.validateCurrentRecord("Error: Event Query Validation Failed", cursor, testValues);
+        TestUtilities.validateCurrentRecord("Error: Event Query Validation Failed", cursor, testValues);
 
         //TEST: Verify that it doesn't return more than one record
         assertFalse("Error: More than one record returned from event entry", cursor.moveToNext());
@@ -98,10 +149,6 @@ public class TestDb extends AndroidTestCase {
 
 
     }
-
-    public void testVenueTable(){ insertVenue(); }
-
-    public void testLocationTable(){ insertLocation(); }
 
     public long insertVenue() {
         long locationRowID = insertLocation();
@@ -125,7 +172,7 @@ public class TestDb extends AndroidTestCase {
         assertTrue("Error: No records returned from venue query", cursor.moveToFirst());
 
         //TEST: Validate location entries
-        //TestUtilities.validateCurrentRecord("Error: Venue Query Validation Failed", cursor, testValues);
+        TestUtilities.validateCurrentRecord("Error: Venue Query Validation Failed", cursor, testValues);
 
         //TEST: Validate only one row was created
         assertFalse("Error: More than one record return from venue query", cursor.moveToNext());
@@ -158,15 +205,34 @@ public class TestDb extends AndroidTestCase {
                 null,
                 null
         );
+        cursor.moveToFirst();
         assertTrue("Error: No records returned from location query", cursor.moveToFirst());
 
         //TEST: Validate location entries
-        //TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", cursor, testValues);
+        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", cursor, testValues);
 
         //TEST: Validate only one row was created
         assertFalse("Error: More than one record return from location query", cursor.moveToNext());
 
+        //Insert a second time to see if the same row is returned
+        long secondLocationRowId = db.insert(FestivalContract.LocationEntry.TABLE_NAME, null, testValues);
+        Log.d(LOG_TAG, "First Location Row Id: " + locationRowId + ", Second Location Row Id: " + secondLocationRowId);
+        //assertEquals("Error: Inserting same record did not return same row", locationRowId, secondLocationRowId);
+
+        cursor = db.query(
+                FestivalContract.LocationEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        cursor.moveToFirst();
+        assertFalse("Error: More than one record return from location query", cursor.moveToNext());
+
         cursor.close();
+
         db.close();
 
         return locationRowId;

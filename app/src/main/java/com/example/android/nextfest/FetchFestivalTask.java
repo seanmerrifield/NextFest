@@ -1,15 +1,15 @@
 package com.example.android.nextfest;
 
 
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.android.nextfest.data.FestivalContract;
+import com.example.android.nextfest.data.Event;
+import com.example.android.nextfest.data.Location;
+import com.example.android.nextfest.data.Venue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +23,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Vector;
 
+import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmResults;
+
 public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
     private final String LOG_TAG = FetchFestivalTask.class.getSimpleName();
@@ -34,153 +38,198 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         mContext = context;
     }
 
-
-    long addLocation(String cityName, String countryName, double lat, double lon){
-        long locationId;
-
-        //First check if it already exists in the database
-        Cursor locationCursor = mContext.getContentResolver().query(
-                FestivalContract.LocationEntry.CONTENT_URI,
-                new String[]{FestivalContract.LocationEntry._ID},
-                FestivalContract.LocationEntry.COLUMN_CITY + " = ?",
-                new String[]{cityName},
-                null);
-
-        //If it exists, set locationId to returned Id
-        if(locationCursor.moveToFirst()){
-            int locationIdIndex = locationCursor.getColumnIndex(FestivalContract.LocationEntry._ID);
-            locationId = locationCursor.getLong(locationIdIndex);
-        }
-        else{
-            ContentValues locationValues = new ContentValues();
-
-            locationValues.put(FestivalContract.LocationEntry.COLUMN_CITY, cityName);
-            locationValues.put(FestivalContract.LocationEntry.COLUMN_COUNTRY, countryName);
-            locationValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LAT, lat);
-            locationValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LONG, lon);
-
-            Uri insertedUri = mContext.getContentResolver().insert(FestivalContract.LocationEntry.CONTENT_URI, locationValues);
-
-            locationId = ContentUris.parseId(insertedUri);
-        }
-        locationCursor.close();
-
-        return locationId;
-    }
-
-    long addVenue(String venueName, long locationId){
-        long venueId;
-
-        //First check if it already exists in the database
-        Cursor venueCursor = mContext.getContentResolver().query(
-                FestivalContract.VenueEntry.CONTENT_URI,
-                new String[]{FestivalContract.VenueEntry._ID},
-                FestivalContract.VenueEntry.COLUMN_VENUE_NAME + " = ?",
-                new String[]{venueName},
-                null);
-
-        //If it exists, set locationId to returned Id
-        if(venueCursor.moveToFirst()){
-            int venueIdIndex = venueCursor.getColumnIndex(FestivalContract.VenueEntry._ID);
-            venueId = venueCursor.getLong(venueIdIndex);
-        }
-        else{
-            ContentValues venueValues = new ContentValues();
-
-            venueValues.put(FestivalContract.VenueEntry.COLUMN_VENUE_NAME, venueName);
-            venueValues.put(FestivalContract.VenueEntry.COLUMN_LOCATION_KEY, locationId);
-
-
-            Uri insertedUri = mContext.getContentResolver().insert(FestivalContract.VenueEntry.CONTENT_URI, venueValues);
-
-            venueId = ContentUris.parseId(insertedUri);
-        }
-        venueCursor.close();
-
-        return venueId;
-    }
-
     String[] parseLocationString(String locationString){
         String delims = "[ ,]";
         return locationString.split(delims);
     }
 
-    public void getFestivalDataFromJson(String festivalJsonStr){
-
-        final String POPULARITY_KEY = "popularity";
-        final String VENUE_KEY = "venue";
-        final String LOCATION_KEY = "location";
-        final String LATITUDE_KEY = "lat";
-        final String LONGITUDE_KEY = "lng";
-        final String CITY_KEY = "city";
-        final String EVENT_TYPE_KEY = "type";
-        final String NAME_KEY = "displayName";
-        final String START_TIME_KEY = "start";
-        final String DATE_KEY = "date";
-        final String TIME_KEY = "time";
-
+    public JSONArray getEventsJsonArray(String festivalJsonStr){
         final String RESULTS_PAGE_KEY = "resultsPage";
         final String RESULTS_KEY = "results";
         final String EVENT_KEY = "event";
-        final String PERFORMANCE_KEY = "performance";
-
         try {
-
             JSONObject eventsJSON = new JSONObject(festivalJsonStr);
             eventsJSON = eventsJSON.getJSONObject(RESULTS_PAGE_KEY).getJSONObject(RESULTS_KEY);
 
             //Gets array of events at location
-            JSONArray eventsArray = eventsJSON.getJSONArray(EVENT_KEY);
+            return eventsJSON.getJSONArray(EVENT_KEY);
+        }
+        catch (JSONException e){
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
 
-            //All event data will be placed here
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(eventsArray.length());
+    }
+    public Event createEvent(Realm realm, JSONObject eventJson, JSONArray performersArray){
+        String EVENT_TYPE_KEY = "type";
+        String NAME_KEY = "displayName";
+        String START_TIME_KEY = "start";
+        String DATE_KEY = "date";
+        String TIME_KEY = "time";
+        String POPULARITY_KEY = "popularity";
 
-            String[] resultStrs = new String[eventsArray.length()];
+        try {
+            //EVENT DATA
+            String headliner;
+            //If there are performers, find headliner
+            if (performersArray.isNull(0)) {
+                headliner = "TBD";
+            } else {
+                //Assumes first object in array is the headliner
+                headliner = performersArray.getJSONObject(0).getString(NAME_KEY);
+            }
 
-            for (int i = 0; i < eventsArray.length(); i++){
+            String eventName = eventJson.getString(NAME_KEY);
+            String eventType = eventJson.getString(EVENT_TYPE_KEY);
+            double popularity = eventJson.getDouble(POPULARITY_KEY);
+            JSONObject dateJson = eventJson.getJSONObject(START_TIME_KEY);
+            String dateStr = dateJson.getString(DATE_KEY);
+            String timeStr = dateJson.getString(TIME_KEY);
+
+
+            RealmResults<Event> eventResult = realm.where(Event.class).equalTo("eventName", eventName).findAll();
+            Event event;
+            if (eventResult.size() != 0){
+                event = eventResult.first();
+            }
+            else{
+                event = new Event();
+            }
+
+            event.setEventName(eventJson.getString(NAME_KEY));
+            event.setHeadliner(headliner);
+            event.setDate(Utility.formatDatetoLong(dateStr, "yyyy-MM-dd"));
+            event.setTime(Utility.formatTimetoInt(timeStr, "HH:mm:ss"));
+
+            return event;
+        }
+        catch(JSONException e){
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+    public Venue createVenue(Realm realm, JSONObject venueJson, Event event){
+        String NAME_KEY = "displayName";
+        try {
+            //VENUE DATA
+            String venueString = venueJson.getString(NAME_KEY);
+
+            RealmResults<Venue> venueResult = realm.where(Venue.class).equalTo("venueName", venueString).findAll();
+            Venue venue;
+            if (venueResult.size() != 0) {
+                venue = venueResult.first();
+            } else {
+                venue = new Venue();
+
+            }
+            if (venue.getEvents() == null) {
+                venue.setEvents(new RealmList<Event>());
+            }
+            venue.setVenueName(venueString);
+            venue.getEvents().add(event);
+            return venue;
+            }
+        catch(JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+    public Location createLocation(Realm realm, JSONObject locationJson, String locationSetting, Venue venue){
+        final String LATITUDE_KEY = "lat";
+        final String LONGITUDE_KEY = "lng";
+        final String CITY_KEY = "city";
+        try {
+            //LOCATION DATA
+            String locationStr = locationJson.getString(CITY_KEY);
+            String[] locationData = parseLocationString(locationStr);
+            String city = locationData[0];
+            String country = locationData[1];
+            double latitude = locationJson.getDouble(LATITUDE_KEY);
+            double longitude = locationJson.getDouble(LONGITUDE_KEY);
+
+            RealmResults<Location> locationResult = realm.where(Location.class).equalTo("locationSetting", Long.parseLong(locationSetting, 10)).findAll();
+            Location location;
+            if (locationResult.size() != 0) {
+                location = locationResult.first();
+            } else {
+                location = new Location();
+
+            }
+            location.setLocationSetting(Long.parseLong(locationSetting, 10));
+            location.setCity(city);
+            location.setCountry(country);
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
+            if (location.getVenues() == null) {
+                location.setVenues(new RealmList<Venue>());
+            }
+            location.getVenues().add(venue);
+            return location;
+        }
+        catch(JSONException e){
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    public String[] getFestivalDataFromJson(String festivalJsonStr, String locationSetting){
+
+        final String VENUE_KEY = "venue";
+        final String LOCATION_KEY = "location";
+        final String PERFORMANCE_KEY = "performance";
+
+        JSONArray eventsArray = getEventsJsonArray(festivalJsonStr);
+        if (eventsArray == null){
+            return null;
+        }
+
+        String[] resultStrs = new String[eventsArray.length()];
+        //All event data will be placed here
+        Vector<ContentValues> cVVector = new Vector<ContentValues>(eventsArray.length());
+
+
+       // RealmConfiguration config = new RealmConfig
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+
+        try {
+            for (int i = 0; i < eventsArray.length(); i++) {
 
                 JSONObject eventJson = eventsArray.getJSONObject(i);
                 JSONObject venueJson = eventJson.getJSONObject(VENUE_KEY);
                 JSONObject locationJson = eventJson.getJSONObject(LOCATION_KEY);
-                JSONObject dateJson = eventJson.getJSONObject(START_TIME_KEY);
-
                 JSONArray performersArray = eventJson.getJSONArray(PERFORMANCE_KEY);
 
-                JSONObject headlinerJSON;
-                String headliner;
-
-                //EVENT DATA
-
-                //If there are performers, find headliner
-                if (performersArray.isNull(0)) {
-                    headliner = "TBD";
+                Event event = createEvent(realm, eventJson, performersArray);
+                if (event == null){
+                    return null;
                 }
-                else {
-                    //Assumes first object in array is the headliner
-                    headlinerJSON = performersArray.getJSONObject(0);
-                    headliner = headlinerJSON.getString(NAME_KEY);
+                realm.copyToRealmOrUpdate(event);
+
+
+                Venue venue = createVenue(realm, venueJson, event);
+                if (venue == null){
+                    return null;
                 }
+                realm.copyToRealmOrUpdate(venue);
 
-                String eventType = eventJson.getString(EVENT_TYPE_KEY);
-                String eventName = eventJson.getString(NAME_KEY);
-                double popularity = eventJson.getDouble(POPULARITY_KEY);
-                String dateStr = dateJson.getString(DATE_KEY);
-                long dateLong = Utility.formatDatetoLong(dateStr, "yyyy-MM-dd");
-
-
-                //VENUE DATA
-                String venue = venueJson.getString(NAME_KEY);
-
-                //LOCATION DATA
-                String locationStr = locationJson.getString(CITY_KEY);
-                String[] locationData = parseLocationString(locationStr);
-                String city = locationData[0];
-                String country = locationData[1];
-                Double latitude = locationJson.getDouble(LATITUDE_KEY);
-                Double longitude =locationJson.getDouble(LONGITUDE_KEY);
+                Location location = createLocation(realm, locationJson, locationSetting, venue);
+                if (location == null){
+                    return null;
+                }
+                realm.copyToRealmOrUpdate(location);
 
 
-                long locationId = addLocation(city, country, latitude, longitude);
+
+                /*
+                long locationId = addLocation(locationSetting, city, country, latitude, longitude);
                 long venueId = addVenue(venue, locationId);
 
 
@@ -189,16 +238,26 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
                 eventValues.put(FestivalContract.EventEntry.COLUMN_VENUE_KEY, venueId);
                 eventValues.put(FestivalContract.EventEntry.COLUMN_EVENT_NAME, eventName);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_START_DATE, dateLong);
-                //Need to fix end date string
-                eventValues.put(FestivalContract.EventEntry.COLUMN_END_DATE, dateLong);
+                eventValues.put(FestivalContract.EventEntry.COLUMN_DATE, dateLong);
+                eventValues.put(FestivalContract.EventEntry.COLUMN_TIME, timeInt);
+                eventValues.put(FestivalContract.EventEntry.COLUMN_HEADLINER, headliner);
 
                 cVVector.add(eventValues);
+                */
 
-                resultStrs[i] = dateLong + " - " + headliner + " - " + venue;
 
+
+                resultStrs[i] = Utility.formatDatetoString(event.getDate()) + " - " +
+                                event.getHeadliner() + " - " +
+                                venue.getVenueName() + " - " +
+                                location.getCity();
+
+                Log.d(LOG_TAG, resultStrs[i]);
             }
 
+            realm.commitTransaction();
+            realm.close();
+            /*
             long insertCount;
             if (cVVector.size() > 0){
                 ContentValues[] cVArray = new ContentValues[cVVector.size()];
@@ -209,14 +268,16 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
                 insertCount = 0;
             }
 
+
             Log.d(LOG_TAG, insertCount + " out of " + cVVector.size() + " successfully inserted.");
 
-
-
+            */
+            return resultStrs;
         }
         catch(JSONException e){
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
+            return null;
         }
 
     };
@@ -281,7 +342,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
            }
 
            festivalJsonStr = buffer.toString();
-           getFestivalDataFromJson(festivalJsonStr);
+           getFestivalDataFromJson(festivalJsonStr, locationQuery);
 
        }
        catch (IOException e){

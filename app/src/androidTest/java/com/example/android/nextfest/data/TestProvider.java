@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.test.AndroidTestCase;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.util.Log;
 public class TestProvider extends AndroidTestCase{
 
     public static final String LOG_TAG = TestProvider.class.getSimpleName();
+
 
     public void deleteAllRecordsFromProvider(){
         mContext.getContentResolver().delete( FestivalContract.EventEntry.CONTENT_URI, null, null);
@@ -39,14 +41,6 @@ public class TestProvider extends AndroidTestCase{
 
     }
 
-    public void deleteAllRecordsFromDB() {
-        FestivalDbHelper dbHelper = new FestivalDbHelper(mContext);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(FestivalContract.EventEntry.TABLE_NAME, null, null);
-        db.delete(FestivalContract.VenueEntry.TABLE_NAME, null, null);
-        db.delete(FestivalContract.LocationEntry.TABLE_NAME, null, null);
-        db.close();
-    }
 
     @Override
     protected void setUp() throws Exception {
@@ -193,6 +187,55 @@ public class TestProvider extends AndroidTestCase{
         db.close();
     }
 
+    public void testGetEventByVenue(){
+        Uri venueUri = FestivalContract.EventEntry.buildEventVenue(TestUtilities.VENUE_NAME);
+
+        FestivalDbHelper dbHelper = new FestivalDbHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        // Create Location Values
+        ContentValues locationValues = TestUtilities.createLocationValues();
+        long locationRowId = db.insert(FestivalContract.LocationEntry.TABLE_NAME, null, locationValues);
+
+        // Create Venue Values
+        ContentValues venueValues = TestUtilities.createVenueValues(locationRowId);
+        long venueRowId = db.insert(FestivalContract.VenueEntry.TABLE_NAME, null, venueValues);
+
+        // Create Event values
+        ContentValues eventValues = TestUtilities.createEventValues(venueRowId);
+        long eventRowId;
+        eventRowId = db.insert(FestivalContract.EventEntry.TABLE_NAME, null, eventValues);
+
+        // Test: Event Values Inserted into the table
+        assertTrue("Error: Failure to insert Event Values", eventRowId != -1);
+
+
+        ContentValues eventWithVenueValues = TestUtilities.createEventWithVenueValues(locationRowId);
+
+        SQLiteQueryBuilder sEventByVenueSettingQueryBuilder = new SQLiteQueryBuilder();
+        sEventByVenueSettingQueryBuilder.setTables(
+                FestivalContract.EventEntry.TABLE_NAME + " INNER JOIN " +
+                        FestivalContract.VenueEntry.TABLE_NAME +
+                        " ON " + FestivalContract.EventEntry.TABLE_NAME +
+                        "." + FestivalContract.EventEntry.COLUMN_VENUE_KEY +
+                        " = " + FestivalContract.VenueEntry.TABLE_NAME +
+                        "." + FestivalContract.VenueEntry._ID);
+
+        Cursor cursor = sEventByVenueSettingQueryBuilder.query(db,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        TestUtilities.validateCursor("testGetEventByVenue, Event With Venue query", cursor, eventWithVenueValues);
+
+        db.close();
+    }
+
+
+
 
     public void testUpdateLocation(){
         ContentValues locationValues = TestUtilities.createLocationValues();
@@ -319,7 +362,7 @@ public class TestProvider extends AndroidTestCase{
         TestUtilities.validateCursor("testInsertReadProvider. Error Validating EventEntry insert.", eventCursor, eventValues);
 
         //Combine venue values in event values to check joined Event and Venue table data
-        eventValues.putAll(venueValues);
+        ContentValues eventWithVenueValues = TestUtilities.createEventWithVenueValues(locationRowId);
 
         //Query joining Event and Venue table data
         eventCursor = mContext.getContentResolver().query(
@@ -329,7 +372,7 @@ public class TestProvider extends AndroidTestCase{
                 null,
                 null);
 
-        TestUtilities.validateCursor("testInsertReadProvider. Error Validating joined Event and Venue insert.", eventCursor, eventValues);
+        TestUtilities.validateCursor("testInsertReadProvider. Error Validating joined Event and Venue insert.", eventCursor, eventWithVenueValues);
 
 
         /*
@@ -378,8 +421,9 @@ public class TestProvider extends AndroidTestCase{
             //Get venueId from Venue Cursor
             eventValues.put(FestivalContract.EventEntry.COLUMN_VENUE_KEY, venueCursor.getInt(0));
             eventValues.put(FestivalContract.EventEntry.COLUMN_EVENT_NAME, eventNames[i]);
-            eventValues.put(FestivalContract.EventEntry.COLUMN_START_DATE, TestUtilities.TEST_START_DATE);
-            eventValues.put(FestivalContract.EventEntry.COLUMN_END_DATE, TestUtilities.TEST_END_DATE);
+            eventValues.put(FestivalContract.EventEntry.COLUMN_HEADLINER, TestUtilities.HEADLINER);
+            eventValues.put(FestivalContract.EventEntry.COLUMN_DATE, TestUtilities.TEST_DATE);
+            eventValues.put(FestivalContract.EventEntry.COLUMN_TIME, TestUtilities.TEST_TIME);
 
             eventsArray[i] = eventValues;
 

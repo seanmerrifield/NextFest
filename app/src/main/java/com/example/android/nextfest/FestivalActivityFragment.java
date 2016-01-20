@@ -1,12 +1,8 @@
 package com.example.android.nextfest;
 
 
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,7 +14,7 @@ import android.widget.ListView;
 import com.example.android.nextfest.data.FestivalContract;
 
 
-public class FestivalActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class FestivalActivityFragment extends Fragment{
 
     private static final int FESTIVAL_LOADER = 0;
     private FestivalAdapter mFestivalAdapter;
@@ -27,15 +23,17 @@ public class FestivalActivityFragment extends Fragment implements LoaderManager.
             FestivalContract.EventEntry.TABLE_NAME + "." + FestivalContract.EventEntry._ID,
             FestivalContract.EventEntry.COLUMN_VENUE_KEY,
             FestivalContract.EventEntry.COLUMN_EVENT_NAME,
-            FestivalContract.EventEntry.COLUMN_START_DATE,
-            FestivalContract.EventEntry.COLUMN_END_DATE
+            FestivalContract.EventEntry.COLUMN_HEADLINER,
+            FestivalContract.EventEntry.COLUMN_DATE,
+            FestivalContract.EventEntry.COLUMN_TIME
     };
 
     static final int COL_EVENT_ID = 0;
     static final int COL_VENUE_ID = 1;
-    static final int COL_EVENt_NAME = 2;
-    static final int COL_START_DATE = 3;
-    static final int COL_END_DATE = 4;
+    static final int COL_EVENT_NAME = 2;
+    static final int COL_HEADLINER = 3;
+    static final int COL_START_DATE = 4;
+    static final int COL_END_DATE = 5;
 
 
     public FestivalActivityFragment() {
@@ -56,6 +54,7 @@ public class FestivalActivityFragment extends Fragment implements LoaderManager.
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
+
         if (id == R.id.action_refresh){
             updateFestivals();
             return true;
@@ -95,7 +94,7 @@ public class FestivalActivityFragment extends Fragment implements LoaderManager.
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState){
-        getLoaderManager().initLoader(FESTIVAL_LOADER, null, this);
+        //getLoaderManager().initLoader(FESTIVAL_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -108,16 +107,16 @@ public class FestivalActivityFragment extends Fragment implements LoaderManager.
     @Override
     public void onStart(){
         super.onStart();
-        updateFestivals();
+        //updateFestivals();
 
     }
 
 
-
+/*
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle){
 
-        String sortOrder = FestivalContract.EventEntry.COLUMN_START_DATE + " ASC";
+        String sortOrder = FestivalContract.EventEntry.COLUMN_DATE + " ASC";
 
         return new CursorLoader(getActivity(),
                 FestivalContract.EventEntry.CONTENT_URI,
@@ -138,6 +137,6 @@ public class FestivalActivityFragment extends Fragment implements LoaderManager.
     public void onLoaderReset(Loader<Cursor> cursorLoader){
         mFestivalAdapter.swapCursor(null);
     }
-
+*/
 
 }

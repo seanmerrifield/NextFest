@@ -1,15 +1,21 @@
 package com.example.android.nextfest;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 public class FestivalActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        RealmConfiguration config = new RealmConfiguration.Builder(getApplicationContext()).deleteRealmIfMigrationNeeded().build();
+        Realm.setDefaultConfiguration(config);
+
         setContentView(R.layout.activity_festival);
     }
 

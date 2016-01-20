@@ -16,6 +16,24 @@ public class Utility {
 
     static final String LOG_TAG = Utility.class.getSimpleName();
 
+    static int formatTimetoInt(String timeString, String format){
+        int timeInt;
+                try{
+                    SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
+                    Date date = sdf.parse(timeString);
+                    Calendar calendar = new GregorianCalendar();
+                    calendar.setTime(date);
+                    timeInt = calendar.get(Calendar.HOUR_OF_DAY);
+                }
+                catch(ParseException e){
+                    e.printStackTrace();
+                    Log.e(LOG_TAG, "Time string parse failed");
+                    timeInt = 0;
+                }
+
+        return timeInt;
+    }
+
     static long formatDatetoLong(String dateString, String format){
         long dateLong;
         try {

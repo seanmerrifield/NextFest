@@ -8,9 +8,9 @@ import android.test.AndroidTestCase;
 import com.example.android.nextfest.data.FestivalContract;
 
 public class TestFetchWeatherTask extends AndroidTestCase {
-
-    static final String ADD_LOCATION_CITY = "San Francisco";
-    static final String ADD_LOCATION_COUNTRY = "USA";
+    static final String ADD_LOCATION_SETTING = "24426";
+    static final String ADD_LOCATION_CITY = "London";
+    static final String ADD_LOCATION_COUNTRY = "UK";
     static final double ADD_LOCATION_LAT = 34.425833;
     static final double ADD_LOCATION_LON = -119.714167;
 
@@ -21,7 +21,7 @@ public class TestFetchWeatherTask extends AndroidTestCase {
                 new String[]{ADD_LOCATION_CITY});
 
         FetchFestivalTask task = new FetchFestivalTask(getContext());
-        long locationId = task.addLocation(ADD_LOCATION_CITY, ADD_LOCATION_COUNTRY, ADD_LOCATION_LAT, ADD_LOCATION_LON);
+        long locationId = task.addLocation(ADD_LOCATION_SETTING, ADD_LOCATION_CITY, ADD_LOCATION_COUNTRY, ADD_LOCATION_LAT, ADD_LOCATION_LON);
 
         assertFalse("Error: addLocation returned an invalid ID on insert", locationId == -1);
 
@@ -58,7 +58,7 @@ public class TestFetchWeatherTask extends AndroidTestCase {
             assertFalse("Error: there should be only one record returned from a location query", locationCursor.moveToNext());
 
             //Add location again
-            long newLocationId = task.addLocation(ADD_LOCATION_CITY, ADD_LOCATION_COUNTRY, ADD_LOCATION_LAT, ADD_LOCATION_LON);
+            long newLocationId = task.addLocation(ADD_LOCATION_SETTING, ADD_LOCATION_CITY, ADD_LOCATION_COUNTRY, ADD_LOCATION_LAT, ADD_LOCATION_LON);
 
             assertEquals("Error: inserting a location again should return the same ID", locationId, newLocationId);
         }

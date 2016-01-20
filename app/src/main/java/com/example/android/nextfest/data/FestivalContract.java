@@ -23,8 +23,9 @@ public class FestivalContract {
 
         public static final String COLUMN_EVENT_NAME = "event_name";
         public static final String COLUMN_VENUE_KEY = "venue_id";
-        public static final String COLUMN_START_DATE = "start_date";
-        public static final String COLUMN_END_DATE = "end_date";
+        public static final String COLUMN_DATE = "date";
+        public static final String COLUMN_TIME = "time";
+        public static final String COLUMN_HEADLINER = "headliner";
 
 
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_EVENT;
@@ -92,6 +93,7 @@ public class FestivalContract {
         public static final String COLUMN_COUNTRY = "country";
         public static final String COLUMN_COORD_LAT = "coord_lat";
         public static final String COLUMN_COORD_LONG = "coord_long";
+        public static final String COLUMN_LOCATION_SETTING = "location_setting";
 
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;

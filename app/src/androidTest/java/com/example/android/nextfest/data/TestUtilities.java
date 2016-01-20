@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import com.example.android.nextfest.utils.PollingCheck;
 
@@ -18,10 +19,14 @@ public class TestUtilities extends AndroidTestCase {
 
     static final String CITY = "Amsterdam";
     static final String COUNTRY = "Netherlands";
+    static final Long LOCATION_SETTING = 31366L;
+    static final Double LATITUDE = 52.3740;
+    static final Double LONGITUDE = 4.88969;
     static final String VENUE_NAME = "Paradiso";
 
-    static final long TEST_START_DATE = 1451001600000L; //  12/25/2015
-    static final long TEST_END_DATE = 1451088000000L; //    12/26/2015
+    static final String HEADLINER = "Above & Beyond";
+    static final long TEST_DATE = 1451001600000L; //  12/25/2015
+    static final int TEST_TIME = 21; //    9 pm
 
 
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
@@ -37,6 +42,7 @@ public class TestUtilities extends AndroidTestCase {
             int idx = valueCursor.getColumnIndex(columnName);
             assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
             String expectedValue = entry.getValue().toString();
+            Log.d("Debug Log. ", "Column " + columnName + ": Expected Value is " + expectedValue + " and Cursor value is " + valueCursor.getString(idx));
             assertEquals("Value '" + entry.getValue().toString() +
                     "' did not match the expected value '" +
                     expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
@@ -46,6 +52,7 @@ public class TestUtilities extends AndroidTestCase {
 
     static ContentValues createLocationValues() {
         ContentValues testValues = new ContentValues();
+        testValues.put(FestivalContract.LocationEntry.COLUMN_LOCATION_SETTING, LOCATION_SETTING);
         testValues.put(FestivalContract.LocationEntry.COLUMN_COUNTRY, COUNTRY);
         testValues.put(FestivalContract.LocationEntry.COLUMN_CITY, CITY);
         testValues.put(FestivalContract.LocationEntry.COLUMN_COORD_LAT, 52.3740);
@@ -57,13 +64,21 @@ public class TestUtilities extends AndroidTestCase {
         ContentValues testValues = new ContentValues();
         testValues.put(FestivalContract.EventEntry.COLUMN_EVENT_NAME, "Above & Beyond at Paradiso");
         testValues.put(FestivalContract.EventEntry.COLUMN_VENUE_KEY, venueRowID);
-        testValues.put(FestivalContract.EventEntry.COLUMN_START_DATE, TEST_START_DATE);
-        testValues.put(FestivalContract.EventEntry.COLUMN_END_DATE, TEST_END_DATE);
+        testValues.put(FestivalContract.EventEntry.COLUMN_HEADLINER, HEADLINER);
+        testValues.put(FestivalContract.EventEntry.COLUMN_DATE, TEST_DATE);
+        testValues.put(FestivalContract.EventEntry.COLUMN_TIME, TEST_TIME);
         return testValues;
     }
 
     static ContentValues createVenueValues(long locationRowID) {
         ContentValues testValues = new ContentValues();
+        testValues.put(FestivalContract.VenueEntry.COLUMN_VENUE_NAME, VENUE_NAME);
+        testValues.put(FestivalContract.VenueEntry.COLUMN_LOCATION_KEY, locationRowID);
+        return testValues;
+    }
+
+    static ContentValues createEventWithVenueValues(long locationRowID){
+        ContentValues testValues = createEventValues(locationRowID);
         testValues.put(FestivalContract.VenueEntry.COLUMN_VENUE_NAME, VENUE_NAME);
         testValues.put(FestivalContract.VenueEntry.COLUMN_LOCATION_KEY, locationRowID);
         return testValues;

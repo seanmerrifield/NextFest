@@ -15,8 +15,9 @@ public class FestivalAdapter extends CursorAdapter{
 
     private String convertCursorRowToUXFormat(Cursor cursor){
         String date = Utility.formatDatetoString(cursor.getLong(FestivalActivityFragment.COL_START_DATE));
-        String eventName = cursor.getString(FestivalActivityFragment.COL_EVENt_NAME);
-        return  date + " - " + eventName;
+        String headliner = cursor.getString(FestivalActivityFragment.COL_HEADLINER);
+        String eventName = cursor.getString(FestivalActivityFragment.COL_EVENT_NAME);
+        return  date + " - " + headliner + " - " + eventName;
     }
 
     @Override
