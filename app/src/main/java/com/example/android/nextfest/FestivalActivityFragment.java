@@ -11,29 +11,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.android.nextfest.data.FestivalContract;
+import com.example.android.nextfest.data.Event;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+import io.realm.Sort;
 
 
 public class FestivalActivityFragment extends Fragment{
 
-    private static final int FESTIVAL_LOADER = 0;
-    private FestivalAdapter mFestivalAdapter;
-
-    private static final String[] EVENT_COLUMNS = {
-            FestivalContract.EventEntry.TABLE_NAME + "." + FestivalContract.EventEntry._ID,
-            FestivalContract.EventEntry.COLUMN_VENUE_KEY,
-            FestivalContract.EventEntry.COLUMN_EVENT_NAME,
-            FestivalContract.EventEntry.COLUMN_HEADLINER,
-            FestivalContract.EventEntry.COLUMN_DATE,
-            FestivalContract.EventEntry.COLUMN_TIME
-    };
-
-    static final int COL_EVENT_ID = 0;
-    static final int COL_VENUE_ID = 1;
-    static final int COL_EVENT_NAME = 2;
-    static final int COL_HEADLINER = 3;
-    static final int COL_START_DATE = 4;
-    static final int COL_END_DATE = 5;
+    private EventAdapter mEventAdapter;
 
 
     public FestivalActivityFragment() {
@@ -69,12 +56,18 @@ public class FestivalActivityFragment extends Fragment{
 
         View rootView = inflater.inflate(R.layout.fragment_festival, container, false);
 
+        //Retrieve event data
+        Realm realm = Realm.getDefaultInstance();
+        //RealmResults<Location> locationResult = realm.where(Location.class).equalTo("locationSetting", "31366").findAll();
+        //RealmResults<Venue> venueResult = realm.where(Venue.class).equalTo("location.locationSetting", "31366").findAll();
+        RealmResults<Event> eventResult = realm.where(Event.class).greaterThanOrEqualTo("date",System.currentTimeMillis()).findAll();
+        eventResult.sort("date", Sort.ASCENDING);
 
-        mFestivalAdapter = new FestivalAdapter(getActivity(), null, 0);
+        //Attach data to list view
+        mEventAdapter = new EventAdapter(getActivity(), eventResult, true);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_festival);
-
-        listView.setAdapter(mFestivalAdapter);
+        listView.setAdapter(mEventAdapter);
 
         /*
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -88,6 +81,8 @@ public class FestivalActivityFragment extends Fragment{
             }
         });
            */
+
+
         return rootView;
     }
 

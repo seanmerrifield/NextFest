@@ -1,7 +1,6 @@
 package com.example.android.nextfest;
 
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -21,9 +20,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Vector;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmResults;
 
@@ -61,7 +60,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         }
 
     }
-    public Event createEvent(Realm realm, JSONObject eventJson, JSONArray performersArray){
+    public Event createOrUpdateEvent(Realm realm, JSONObject eventJson, JSONArray performersArray){
         String EVENT_TYPE_KEY = "type";
         String NAME_KEY = "displayName";
         String START_TIME_KEY = "start";
@@ -88,20 +87,25 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
             String timeStr = dateJson.getString(TIME_KEY);
 
 
-            RealmResults<Event> eventResult = realm.where(Event.class).equalTo("eventName", eventName).findAll();
-            Event event;
-            if (eventResult.size() != 0){
-                event = eventResult.first();
-            }
-            else{
+            Event event = realm.where(Event.class).equalTo("eventName", eventName).findFirst();
+            //If event doesn't exist, create new Event and increment ID
+            if (event == null){
                 event = new Event();
+                int nextId;
+                //If Event model is empty set first id = 1
+                if (realm.where(Event.class).max("id") == null){
+                    nextId = 1;
+                }
+                //If Event object exists then increment id
+                else{
+                    nextId = realm.where(Event.class).max("id").intValue() + 1;
+                }
+                event.setId(nextId);
             }
-
             event.setEventName(eventJson.getString(NAME_KEY));
             event.setHeadliner(headliner);
             event.setDate(Utility.formatDatetoLong(dateStr, "yyyy-MM-dd"));
             event.setTime(Utility.formatTimetoInt(timeStr, "HH:mm:ss"));
-
             return event;
         }
         catch(JSONException e){
@@ -180,7 +184,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
 
     public String[] getFestivalDataFromJson(String festivalJsonStr, String locationSetting){
-
+        Log.d(LOG_TAG, "Starting getFestivalDataFromJSon");
         final String VENUE_KEY = "venue";
         final String LOCATION_KEY = "location";
         final String PERFORMANCE_KEY = "performance";
@@ -191,9 +195,8 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         }
 
         String[] resultStrs = new String[eventsArray.length()];
-        //All event data will be placed here
-        Vector<ContentValues> cVVector = new Vector<ContentValues>(eventsArray.length());
-
+        RealmConfiguration config = new RealmConfiguration.Builder(mContext).deleteRealmIfMigrationNeeded().build();
+        Realm.setDefaultConfiguration(config);
 
        // RealmConfiguration config = new RealmConfig
         Realm realm = Realm.getDefaultInstance();
@@ -207,71 +210,41 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
                 JSONObject locationJson = eventJson.getJSONObject(LOCATION_KEY);
                 JSONArray performersArray = eventJson.getJSONArray(PERFORMANCE_KEY);
 
-                Event event = createEvent(realm, eventJson, performersArray);
+                Event event = createOrUpdateEvent(realm, eventJson, performersArray);
+                //If no event is created skip to next JSON event
                 if (event == null){
                     return null;
                 }
-                realm.copyToRealmOrUpdate(event);
 
-
+                //If no venue is created skip to next JSON event
                 Venue venue = createVenue(realm, venueJson, event);
                 if (venue == null){
                     return null;
                 }
-                realm.copyToRealmOrUpdate(venue);
 
+                //If no location is created skip to next JSON event
                 Location location = createLocation(realm, locationJson, locationSetting, venue);
                 if (location == null){
                     return null;
                 }
+
+                event.setVenue(venue);
+                venue.setLocation(location);
+                realm.copyToRealmOrUpdate(event);
+                realm.copyToRealmOrUpdate(venue);
                 realm.copyToRealmOrUpdate(location);
-
-
-
-                /*
-                long locationId = addLocation(locationSetting, city, country, latitude, longitude);
-                long venueId = addVenue(venue, locationId);
-
-
-                ContentValues eventValues = new ContentValues();
-
-
-                eventValues.put(FestivalContract.EventEntry.COLUMN_VENUE_KEY, venueId);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_EVENT_NAME, eventName);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_DATE, dateLong);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_TIME, timeInt);
-                eventValues.put(FestivalContract.EventEntry.COLUMN_HEADLINER, headliner);
-
-                cVVector.add(eventValues);
-                */
-
-
 
                 resultStrs[i] = Utility.formatDatetoString(event.getDate()) + " - " +
                                 event.getHeadliner() + " - " +
-                                venue.getVenueName() + " - " +
-                                location.getCity();
+                                event.getVenue().getVenueName() + " - " +
+                                venue.getLocation().getCity();
 
                 Log.d(LOG_TAG, resultStrs[i]);
             }
 
             realm.commitTransaction();
             realm.close();
-            /*
-            long insertCount;
-            if (cVVector.size() > 0){
-                ContentValues[] cVArray = new ContentValues[cVVector.size()];
-                cVVector.toArray(cVArray);
-                insertCount = mContext.getContentResolver().bulkInsert(FestivalContract.EventEntry.CONTENT_URI, cVArray);
-            }
-            else{
-                insertCount = 0;
-            }
 
-
-            Log.d(LOG_TAG, insertCount + " out of " + cVVector.size() + " successfully inserted.");
-
-            */
             return resultStrs;
         }
         catch(JSONException e){
@@ -284,6 +257,8 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
    @Override
     protected Void doInBackground(String... params) {
+
+       Log.d(LOG_TAG, "Starting doInBackground");
 
        if (params.length == 0){
            return null;
@@ -320,6 +295,8 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
            URL url = new URL(builtUri.toString());
 
+           Log.d(LOG_TAG, "Fetch URL - " + builtUri.toString());
+
            urlConnection = (HttpURLConnection) url.openConnection();
            urlConnection.setRequestMethod("GET");
            urlConnection.connect();
@@ -329,7 +306,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
            if (inputStream == null) {
                return null;
            }
-
+           Log.d(LOG_TAG, "Creating Buffered Reader");
            //Buffered reader provides an efficient way of reading the retrieved data
            reader = new BufferedReader(new InputStreamReader(inputStream));
            String line;
@@ -342,6 +319,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
            }
 
            festivalJsonStr = buffer.toString();
+           Log.d(LOG_TAG, "Getting Festival Data from JSON...");
            getFestivalDataFromJson(festivalJsonStr, locationQuery);
 
        }
