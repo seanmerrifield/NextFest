@@ -1,14 +1,13 @@
 package com.example.android.nextfest;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.nextfest.data.Event;
@@ -24,32 +23,10 @@ public class FestivalActivityFragment extends Fragment{
 
 
     public FestivalActivityFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        // Add this line in order for this fragment to handle menu events
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
-        inflater.inflate(R.menu.festivalfragment, menu);
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-        int id = item.getItemId();
-
-        if (id == R.id.action_refresh){
-            updateFestivals();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,18 +46,18 @@ public class FestivalActivityFragment extends Fragment{
         ListView listView = (ListView) rootView.findViewById(R.id.listview_festival);
         listView.setAdapter(mEventAdapter);
 
-        /*
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-              String festival = mFestivalAdapter.getItem(position);
-               Intent intent = new Intent(getActivity(), FestivalDetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, festival);
+              Event event = mEventAdapter.getItem(position);
+               Intent intent = new Intent(getActivity(), EventDetailActivity.class)
+                        .putExtra("event_id", event.getId());
                 startActivity(intent);
             }
         });
-           */
+
 
 
         return rootView;
@@ -102,7 +79,7 @@ public class FestivalActivityFragment extends Fragment{
     @Override
     public void onStart(){
         super.onStart();
-        //updateFestivals();
+        updateFestivals();
 
     }
 

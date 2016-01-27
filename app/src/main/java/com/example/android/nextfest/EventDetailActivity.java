@@ -6,36 +6,27 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
+public class EventDetailActivity extends AppCompatActivity {
 
-public class FestivalActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RealmConfiguration config = new RealmConfiguration.Builder(getApplicationContext()).deleteRealmIfMigrationNeeded().build();
-        Realm.setDefaultConfiguration(config);
-
-        setContentView(R.layout.activity_festival);
-
-       Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-       setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_event_detail);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
     }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_festival, menu);
+        getMenuInflater().inflate(R.menu.menu_event, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -45,4 +36,5 @@ public class FestivalActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
