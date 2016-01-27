@@ -32,6 +32,14 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".FestivalActivity">
+            <meta-deta
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.android.nextfest.FestivalActivity" />
+        </activity>
+
         <provider
             android:name=".data.FestivalProvider"
             android:authorities="com.example.android.nextfest" />

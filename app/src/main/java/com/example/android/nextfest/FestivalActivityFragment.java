@@ -2,7 +2,9 @@ package com.example.android.nextfest;
 
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,8 +74,10 @@ public class FestivalActivityFragment extends Fragment{
 
 
     private void updateFestivals(){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String locationSetting = prefs.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
         FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity());
-        festivalTask.execute("31366");
+        festivalTask.execute(locationSetting);
     }
 
     @Override
