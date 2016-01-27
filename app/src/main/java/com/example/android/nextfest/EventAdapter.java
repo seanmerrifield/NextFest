@@ -17,7 +17,9 @@ public class EventAdapter extends RealmBaseAdapter<Event> implements ListAdapter
     static final String LOG_TAG = EventAdapter.class.getSimpleName();
 
     public static class EventViewHolder {
-        TextView name;
+        TextView headliner;
+        TextView venue;
+        TextView date;
     }
 
     public EventAdapter(Context context, RealmResults<Event> realmResults, boolean automaticUpdate){
@@ -30,7 +32,9 @@ public class EventAdapter extends RealmBaseAdapter<Event> implements ListAdapter
         if (convertView == null){
             convertView = inflater.inflate(R.layout.fragment_festival, parent, false);
             viewHolder = new EventViewHolder();
-            viewHolder.name = (TextView) convertView.findViewById(R.id.list_item_festival_textview);
+            viewHolder.headliner = (TextView) convertView.findViewById(R.id.list_item_headliner_text_view);
+            viewHolder.venue = (TextView) convertView.findViewById(R.id.list_item_venue_text_view);
+            viewHolder.date = (TextView) convertView.findViewById(R.id.list_item_date_text_view);
             convertView.setTag(viewHolder);
         }
         else {
@@ -38,7 +42,10 @@ public class EventAdapter extends RealmBaseAdapter<Event> implements ListAdapter
         }
 
         Event event = realmResults.get(position);
-        viewHolder.name.setText(event.getHeadliner() + " at " + event.getVenue().getVenueName()+ ", " + event.getVenue().getLocation().getCity() + " on " + Utility.formatDatetoString(event.getDate()));
+        viewHolder.headliner.setText(event.getHeadliner());
+        viewHolder.venue.setText(event.getVenue().getVenueName());
+        viewHolder.date.setText(Utility.formatDatetoString(event.getDate()));
+                //+ " at " + event.getVenue().getVenueName()+ ", " + event.getVenue().getLocation().getCity() + " on " + Utility.formatDatetoString(event.getDate()));
         return convertView;
     }
 
