@@ -24,8 +24,7 @@
 
         <activity
             android:name=".FestivalActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -47,8 +46,7 @@
         <activity
             android:name=".EventDetailActivity"
             android:label="@string/title_activity_event_detail"
-            android:parentActivityName=".FestivalActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:parentActivityName=".FestivalActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.nextfest.FestivalActivity" />

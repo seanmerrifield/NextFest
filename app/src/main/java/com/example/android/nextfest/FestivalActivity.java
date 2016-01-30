@@ -25,8 +25,8 @@ public class FestivalActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_festival);
 
-       Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-       setSupportActionBar(toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
     }
 
 
