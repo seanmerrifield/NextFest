@@ -16,8 +16,8 @@
         android:elevation="4dp"
         android:theme="@style/ToolbarTheme"
         />
-    <fragment
 
+    <fragment
         android:id="@+id/fragment"
         android:name="com.example.android.nextfest.FestivalActivityFragment"
         tools:layout="@layout/fragment_festival"
