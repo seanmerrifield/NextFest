@@ -37,8 +37,6 @@ public class FestivalActivityFragment extends Fragment{
 
         //Retrieve event data
         Realm realm = Realm.getDefaultInstance();
-        //RealmResults<Location> locationResult = realm.where(Location.class).equalTo("locationSetting", "31366").findAll();
-        //RealmResults<Venue> venueResult = realm.where(Venue.class).equalTo("location.locationSetting", "31366").findAll();
         RealmResults<Event> eventResult = realm.where(Event.class).greaterThanOrEqualTo("date",System.currentTimeMillis()).findAll();
         eventResult.sort("date", Sort.ASCENDING);
 
@@ -87,32 +85,5 @@ public class FestivalActivityFragment extends Fragment{
 
     }
 
-
-/*
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle){
-
-        String sortOrder = FestivalContract.EventEntry.COLUMN_DATE + " ASC";
-
-        return new CursorLoader(getActivity(),
-                FestivalContract.EventEntry.CONTENT_URI,
-                EVENT_COLUMNS,
-                null,
-                null,
-                sortOrder
-                );
-
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor){
-        mFestivalAdapter.swapCursor(cursor);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader){
-        mFestivalAdapter.swapCursor(null);
-    }
-*/
 
 }

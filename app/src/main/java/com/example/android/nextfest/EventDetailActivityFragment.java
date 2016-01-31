@@ -28,7 +28,11 @@ public class EventDetailActivityFragment extends Fragment {
         if (eventId != 0 ) {
             Realm realm = Realm.getDefaultInstance();
             Event event = realm.where(Event.class).equalTo("id", eventId).findFirst();
-            ((TextView) rootView.findViewById(R.id.event_detail_text)).setText(event.getEventName());
+            ((TextView) rootView.findViewById(R.id.event_detail_headliner_text)).setText(event.getHeadliner());
+            ((TextView) rootView.findViewById(R.id.event_detail_venue_text)).setText(event.getVenue().getVenueName());
+            ((TextView) rootView.findViewById(R.id.event_detail_date_text)).setText(
+                                                                            event.getVenue().getLocation().getCity() + ", " +
+                                                                            event.getVenue().getLocation().getCountry());
         }
         return rootView;
 
