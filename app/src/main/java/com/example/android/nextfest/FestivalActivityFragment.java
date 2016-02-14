@@ -42,7 +42,6 @@ public class FestivalActivityFragment extends Fragment{
 
         //Attach data to list view
         mEventAdapter = new EventAdapter(getActivity(), eventResult, true);
-
         ListView listView = (ListView) rootView.findViewById(R.id.listview_festival);
         listView.setAdapter(mEventAdapter);
 
@@ -52,7 +51,7 @@ public class FestivalActivityFragment extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
               Event event = mEventAdapter.getItem(position);
-               Intent intent = new Intent(getActivity(), EventDetailActivity.class)
+                Intent intent = new Intent(getActivity(), EventDetailActivity.class)
                         .putExtra("event_id", event.getId());
                 startActivity(intent);
             }
