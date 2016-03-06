@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,7 @@ import io.realm.Sort;
 public class FestivalActivityFragment extends Fragment{
 
     private EventAdapter mEventAdapter;
-
+    private final String LOG_TAG = FestivalActivity.class.getSimpleName();
 
     public FestivalActivityFragment() {
         setHasOptionsMenu(true);
@@ -71,8 +72,10 @@ public class FestivalActivityFragment extends Fragment{
 
 
     private void updateFestivals(){
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String locationSetting = prefs.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+        Log.v(LOG_TAG, "Updating Festival Data with location setting " + locationSetting);
         FetchFestivalTask festivalTask = new FetchFestivalTask(getActivity());
         festivalTask.execute(locationSetting);
     }

@@ -43,18 +43,31 @@
             android:name=".data.FestivalProvider"
             android:authorities="com.example.android.nextfest" />
 
-        <activity
-            android:name=".EventDetailActivity"
-            android:label="@string/title_activity_event_detail"
-            android:parentActivityName=".FestivalActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.nextfest.FestivalActivity" />
-        </activity>
 
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name=".EventDetailActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance" >
+
+            // An intent filter that will receive the response
+            // from the authentication service
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                // this needs to match the scheme and host of the redirect URI as defined in My applications page
+                <data
+                    android:host="callback"
+                    android:scheme="yourcustomprotocol"/>
+            </intent-filter>
+
+        </activity>
     </application>
 
 </manifest>

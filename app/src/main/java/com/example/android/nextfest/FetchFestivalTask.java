@@ -153,8 +153,10 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
             String[] locationData = parseLocationString(locationStr);
             String city = locationData[0];
             String country = locationData[1];
+
             double latitude = locationJson.getDouble(LATITUDE_KEY);
             double longitude = locationJson.getDouble(LONGITUDE_KEY);
+
 
             RealmResults<Location> locationResult = realm.where(Location.class).equalTo("locationSetting", Long.parseLong(locationSetting, 10)).findAll();
             Location location;
@@ -203,29 +205,38 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         realm.beginTransaction();
 
         try {
+
+            JSONObject eventJson;
+            JSONObject venueJson;
+            JSONObject locationJson;
+            JSONArray performersArray;
+
+            Event event;
+            Venue venue;
+            Location location;
             for (int i = 0; i < eventsArray.length(); i++) {
 
-                JSONObject eventJson = eventsArray.getJSONObject(i);
-                JSONObject venueJson = eventJson.getJSONObject(VENUE_KEY);
-                JSONObject locationJson = eventJson.getJSONObject(LOCATION_KEY);
-                JSONArray performersArray = eventJson.getJSONArray(PERFORMANCE_KEY);
+                eventJson = eventsArray.getJSONObject(i);
+                venueJson = eventJson.getJSONObject(VENUE_KEY);
+                locationJson = eventJson.getJSONObject(LOCATION_KEY);
+                performersArray = eventJson.getJSONArray(PERFORMANCE_KEY);
 
-                Event event = createOrUpdateEvent(realm, eventJson, performersArray);
+                event = createOrUpdateEvent(realm, eventJson, performersArray);
                 //If no event is created skip to next JSON event
                 if (event == null){
-                    return null;
+                    continue;
                 }
 
                 //If no venue is created skip to next JSON event
-                Venue venue = createVenue(realm, venueJson, event);
+                venue = createVenue(realm, venueJson, event);
                 if (venue == null){
-                    return null;
+                    continue;
                 }
 
                 //If no location is created skip to next JSON event
-                Location location = createLocation(realm, locationJson, locationSetting, venue);
+                location = createLocation(realm, locationJson, locationSetting, venue);
                 if (location == null){
-                    return null;
+                    continue;
                 }
 
                 event.setVenue(venue);

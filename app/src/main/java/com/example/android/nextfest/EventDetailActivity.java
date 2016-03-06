@@ -20,9 +20,9 @@ import com.spotify.sdk.android.player.Spotify;
 
 public class EventDetailActivity extends AppCompatActivity implements
         PlayerNotificationCallback, ConnectionStateCallback {
-    private static final String CLIENT_ID = "c520385f35d743a9a0f310c82c581736v";
+    private static final String CLIENT_ID = "c520385f35d743a9a0f310c82c581736";
     private static final String REDIRECT_URI = "com.example.android.nextfest://callback";
-    private static final int REQUEST_CODE = 1234;
+    private static final int REQUEST_CODE = 1337;
     private final String LOG_TAG = EventDetailActivity.class.getSimpleName();
     private Player mPlayer;
 
@@ -40,9 +40,12 @@ public class EventDetailActivity extends AppCompatActivity implements
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(  CLIENT_ID,
                                                                                     AuthenticationResponse.Type.TOKEN,
                                                                                     REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming"});
+        builder.setScopes(new String[]{"streaming"});
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+        //AuthenticationClient.openLoginInBrowser(this, request);
+
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
