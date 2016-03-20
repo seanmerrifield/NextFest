@@ -40,7 +40,7 @@ public class EventDetailActivity extends AppCompatActivity implements
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(  CLIENT_ID,
                                                                                     AuthenticationResponse.Type.TOKEN,
                                                                                     REDIRECT_URI);
-        builder.setScopes(new String[]{"streaming"});
+        builder.setScopes(new String[]{"user-read-private","streaming"});
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
@@ -70,6 +70,7 @@ public class EventDetailActivity extends AppCompatActivity implements
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent){
+        Log.d(LOG_TAG, "Starting onActivityResult");
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (requestCode == REQUEST_CODE){
@@ -82,6 +83,7 @@ public class EventDetailActivity extends AppCompatActivity implements
                         mPlayer.addConnectionStateCallback(EventDetailActivity.this);
                         mPlayer.addPlayerNotificationCallback(EventDetailActivity.this);
                         mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+                        Spotify.destroyPlayer(mPlayer);
                     }
 
                     @Override
@@ -106,7 +108,7 @@ public class EventDetailActivity extends AppCompatActivity implements
 
     @Override
     public void onLoginFailed(Throwable error) {
-        Log.d("MainActivity", "Login failed");
+        Log.d(LOG_TAG, "Login failed");
     }
 
 
