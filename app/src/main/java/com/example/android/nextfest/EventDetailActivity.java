@@ -2,33 +2,34 @@ package com.example.android.nextfest;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
-import com.spotify.sdk.android.player.Config;
-import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
-import com.spotify.sdk.android.player.PlayerNotificationCallback;
-import com.spotify.sdk.android.player.PlayerState;
-import com.spotify.sdk.android.player.Spotify;
 
-public class EventDetailActivity extends AppCompatActivity implements
-        PlayerNotificationCallback, ConnectionStateCallback {
-    private static final String CLIENT_ID = "c520385f35d743a9a0f310c82c581736";
-    private static final String REDIRECT_URI = "com.example.android.nextfest://callback";
-    private static final int REQUEST_CODE = 1337;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class EventDetailActivity extends AppCompatActivity {
+
     private final String LOG_TAG = EventDetailActivity.class.getSimpleName();
-    private Player mPlayer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_event_detail);
 
         //Setup Toolbar
@@ -36,15 +37,9 @@ public class EventDetailActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        //Spotify User Authentication builder
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(  CLIENT_ID,
-                                                                                    AuthenticationResponse.Type.TOKEN,
-                                                                                    REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private","streaming"});
-        AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
-
-        //AuthenticationClient.openLoginInBrowser(this, request);
+        //Retrieve logged in user token for spotify player
+        SpotifyService spotifyService = ((MyApplication) this.getApplication()).getSpotifyService();
+        Log.v(LOG_TAG, "User Token Is: " + spotifyService.getUserToken());
 
     }
     @Override
@@ -59,7 +54,6 @@ public class EventDetailActivity extends AppCompatActivity implements
 
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
@@ -68,72 +62,67 @@ public class EventDetailActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent){
-        Log.d(LOG_TAG, "Starting onActivityResult");
-        super.onActivityResult(requestCode, resultCode, intent);
-
-        if (requestCode == REQUEST_CODE){
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-            if(response.getType() == AuthenticationResponse.Type.TOKEN) {
-                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
-                mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver(){
-                    @Override
-                    public void onInitialized(Player player) {
-                        mPlayer.addConnectionStateCallback(EventDetailActivity.this);
-                        mPlayer.addPlayerNotificationCallback(EventDetailActivity.this);
-                        mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
-                        Spotify.destroyPlayer(mPlayer);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.e(LOG_TAG, "Could not initialize player: " + throwable.getMessage());
-                    }
-                });
-            }
-        }
-
-    }
-
-    @Override
-    public void onLoggedIn(){
-        Log.d(LOG_TAG, "User logged in");
-    }
-
-    @Override
-    public void onLoggedOut(){
-        Log.d(LOG_TAG, "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(Throwable error) {
-        Log.d(LOG_TAG, "Login failed");
-    }
-
-
-    @Override
-    public void onTemporaryError(){
-        Log.d(LOG_TAG, "Temporary error occured");
-    }
-
-    @Override
-    public void onConnectionMessage(String message){
-        Log.d(LOG_TAG, "Received connection message: "+ message);
-    }
-
-    @Override
-    public void onPlaybackEvent(EventType eventType, PlayerState playerState){
-        Log.d(LOG_TAG, "Playback event received: " + eventType.name());
-    }
-
-    @Override
-    public void onPlaybackError(ErrorType errorType, String errorDetails){
-        Log.d(LOG_TAG, "Playback error received: " + errorType.name());
-    }
 
     @Override
     protected void onDestroy(){
         super.onDestroy();
+
+    }
+
+
+
+    public static class PlaylistFragment extends Fragment {
+
+        public PlaylistFragment() {
+            setHasOptionsMenu(true);
+        }
+
+        private final String LOG_TAG = PlaylistFragment.class.getSimpleName();
+
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+            View rootView = inflater.inflate(R.layout.fragment_playlist, container, false);
+
+
+
+            String[] playlistArray = {
+                    "Above & Beyond - Good For Me"
+            };
+
+            List<String> playlist = new ArrayList<String>(
+                    Arrays.asList(playlistArray)
+            );
+
+            //Attach data to list view
+            final ArrayAdapter playlistAdapter = new ArrayAdapter<String>(getActivity(),
+                    R.layout.fragment_playlist,
+                    R.id.list_item_playlist_textview,
+                    playlist);
+
+            ListView listView = (ListView) rootView.findViewById(R.id.listview_playlist);
+            listView.setAdapter(playlistAdapter);
+
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    EventDetailActivity eventDetailActivity = ((EventDetailActivity) getActivity());
+
+                    SpotifyService spotifyService = ((MyApplication) eventDetailActivity.getApplication()).getSpotifyService();
+                    Log.v(LOG_TAG, "User Token Is: " + spotifyService.getUserToken());
+                    Player player = spotifyService.getPlayer();
+                    player.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+                }
+            });
+            return rootView;
+        }
+
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+        }
     }
 }

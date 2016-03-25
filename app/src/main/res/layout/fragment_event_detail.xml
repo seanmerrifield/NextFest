@@ -27,11 +27,6 @@
         android:layout_height="wrap_content"
         android:theme="@style/TextSubtitle"/>
 
-    <TextView
-        android:id="@+id/event_detail_songs_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/TextTitle"
-        android:text="@string/title_fellow_artists"/>
+
 
 </LinearLayout>

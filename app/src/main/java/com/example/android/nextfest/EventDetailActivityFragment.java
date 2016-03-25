@@ -18,10 +18,13 @@ public class EventDetailActivityFragment extends Fragment {
     public EventDetailActivityFragment(){
         setHasOptionsMenu(true);
     }
+    private final String LOG_TAG = EventDetailActivityFragment.class.getSimpleName();
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+
+
         Intent intent = getActivity().getIntent();
         View rootView = inflater.inflate(R.layout.fragment_event_detail, container, false);
         int eventId = intent.getIntExtra("event_id", 0);

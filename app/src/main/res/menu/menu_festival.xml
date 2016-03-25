@@ -9,8 +9,8 @@
         />
 
     <item
-        android:id="@+id/log_in"
-        android:title="Log in"
+        android:id="@+id/action_log_in"
+        android:title="@string/action_log_in"
         android:showAsAction="never"
         />
 
