@@ -3,7 +3,6 @@ package com.example.android.nextfest;
 import android.app.Application;
 
 public class MyApplication extends Application {
-    private String USER_TOKEN = null;
     private SpotifyService mSpotifyService;
 
     @Override
@@ -12,20 +11,13 @@ public class MyApplication extends Application {
         getSpotifyService();
     }
 
-    public String getUserToken(){
-        return USER_TOKEN;
-    }
 
     public SpotifyService getSpotifyService(){
         if (mSpotifyService == null){
-            mSpotifyService = new SpotifyService();
+            mSpotifyService = new SpotifyService(getApplicationContext());
         }
 
         return mSpotifyService;
     }
 
-
-    public void setUserToken(String userToken){
-        this.USER_TOKEN = userToken;
-    }
 }

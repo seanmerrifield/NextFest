@@ -1,5 +1,7 @@
 package com.example.android.nextfest;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,8 +16,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import com.spotify.sdk.android.player.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +66,8 @@ public class EventDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy(){
         super.onDestroy();
-
+        SpotifyService spotifyService = ((MyApplication) this.getApplication()).getSpotifyService();
+        spotifyService.destroyPlayer();
     }
 
 
@@ -111,9 +112,30 @@ public class EventDetailActivity extends AppCompatActivity {
                     EventDetailActivity eventDetailActivity = ((EventDetailActivity) getActivity());
 
                     SpotifyService spotifyService = ((MyApplication) eventDetailActivity.getApplication()).getSpotifyService();
-                    Log.v(LOG_TAG, "User Token Is: " + spotifyService.getUserToken());
-                    Player player = spotifyService.getPlayer();
-                    player.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+
+                    //Try initalizing Spotify Player. If initialization fails send to LogIn Activity
+                    try {
+                        spotifyService.initializePlayer();
+                        spotifyService.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+
+                    } catch(RuntimeException e){
+                        Log.e(LOG_TAG, e.getMessage(), e);
+                        e.printStackTrace();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                        builder.setMessage(e.getMessage())
+                                .setTitle(R.string.error_title);
+
+                        builder.setPositiveButton(R.string.action_log_in, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        startActivity(new Intent(getActivity(), LogInActivity.class));
+                                    }
+                        });
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+
+                    }
                 }
             });
             return rootView;
@@ -123,6 +145,7 @@ public class EventDetailActivity extends AppCompatActivity {
         @Override
         public void onDestroy() {
             super.onDestroy();
+
         }
     }
 }

@@ -14,5 +14,6 @@
     <string name="pref_location_key" translatable="false">location</string>
     <string name="pref_location_default" translatable="false">31366</string>
 
+    <string name="error_title">Oops!</string>
 
 </resources>

@@ -57,10 +57,13 @@ public class Utility {
         return dateLong;
     }
 
- static String formatDatetoString(long dateInMillis){
-     Date date = new Date(dateInMillis);
-     Calendar calendar = new GregorianCalendar();
-     return DateFormat.getDateInstance().format(date);
- }
+    static String formatDatetoString(long dateInMillis){
+         Date date = new Date(dateInMillis);
+         Calendar calendar = new GregorianCalendar();
+         return DateFormat.getDateInstance().format(date);
+    }
+
+
+
 
 }
