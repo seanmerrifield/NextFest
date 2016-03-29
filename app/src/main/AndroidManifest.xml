@@ -24,7 +24,7 @@
             android:value="com.example" />
 
         <activity
-            android:name=".FestivalActivity"
+            android:name=".Activities.FestivalActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,20 +32,20 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SettingsActivity"
+        <activity android:name=".Activities.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".FestivalActivity">
+            android:parentActivityName=".Activities.FestivalActivity">
             <meta-deta
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.nextfest.FestivalActivity" />
+                android:value="com.example.android.nextfest.Activities.FestivalActivity" />
         </activity>
 
-        <activity android:name=".LogInActivity"
+        <activity android:name=".Activities.LogInActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".FestivalActivity">
+            android:parentActivityName=".Activities.FestivalActivity">
             <meta-deta
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.nextfest.FestivalActivity" />
+                android:value="com.example.android.nextfest.Activities.FestivalActivity" />
         </activity>
 
         <provider
@@ -58,7 +58,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name=".EventDetailActivity"
+            android:name=".Activities.EventDetailActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance" >
 

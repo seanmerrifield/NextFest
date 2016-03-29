@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -13,6 +13,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.example.android.nextfest.Activities.EventDetailActivity;
+import com.example.android.nextfest.Activities.LogInActivity;
+import com.example.android.nextfest.MyApplication;
+import com.example.android.nextfest.R;
+import com.example.android.nextfest.SpotifyService;
 import com.example.android.nextfest.data.Artist;
 
 import java.util.ArrayList;

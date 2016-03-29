@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.android.nextfest.AsyncTasks.FetchArtistTask;
+import com.example.android.nextfest.R;
 import com.example.android.nextfest.data.Event;
 
 import io.realm.Realm;

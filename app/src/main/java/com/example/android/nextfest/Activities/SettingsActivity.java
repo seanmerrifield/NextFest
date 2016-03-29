@@ -1,10 +1,12 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Activities;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+
+import com.example.android.nextfest.R;
 
 
 public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener{

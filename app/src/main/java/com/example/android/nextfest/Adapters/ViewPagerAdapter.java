@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Adapters;
 
 
 import android.support.v4.app.Fragment;

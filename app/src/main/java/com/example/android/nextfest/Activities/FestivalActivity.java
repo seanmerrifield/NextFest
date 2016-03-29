@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +12,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.example.android.nextfest.Fragments.FestivalActivityFragment;
+import com.example.android.nextfest.R;
+import com.example.android.nextfest.Fragments.VenueActivityFragment;
+import com.example.android.nextfest.Adapters.ViewPagerAdapter;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;

@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Fragments;
 
 
 import android.content.Intent;
@@ -13,6 +13,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.example.android.nextfest.Activities.EventDetailActivity;
+import com.example.android.nextfest.Activities.FestivalActivity;
+import com.example.android.nextfest.EventAdapter;
+import com.example.android.nextfest.FetchFestivalTask;
+import com.example.android.nextfest.R;
 import com.example.android.nextfest.data.Event;
 
 import io.realm.Realm;

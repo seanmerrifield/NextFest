@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Adapters;
 
 import android.content.Context;
 import android.view.View;
@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.example.android.nextfest.R;
 import com.example.android.nextfest.data.Venue;
 
 import io.realm.RealmBaseAdapter;

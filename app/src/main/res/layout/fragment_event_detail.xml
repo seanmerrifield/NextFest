@@ -6,7 +6,7 @@
     android:paddingLeft="16dp"
     android:paddingTop="16dp"
     android:orientation="vertical"
-    tools:context="com.example.android.nextfest.EventDetailActivityFragment">
+    tools:context=".Fragments.EventDetailActivityFragment">
 
     <TextView
         android:id="@+id/event_detail_headliner_text"

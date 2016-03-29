@@ -1,4 +1,4 @@
-package com.example.android.nextfest;
+package com.example.android.nextfest.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.example.android.nextfest.R;
+import com.example.android.nextfest.Adapters.VenueAdapter;
 import com.example.android.nextfest.data.Venue;
 
 import io.realm.Realm;

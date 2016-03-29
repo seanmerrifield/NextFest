@@ -200,6 +200,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         RealmConfiguration config = new RealmConfiguration.Builder(mContext).deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(config);
 
+       // RealmConfiguration config = new RealmConfig
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
