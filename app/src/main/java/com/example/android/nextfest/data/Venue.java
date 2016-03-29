@@ -20,7 +20,6 @@ public class Venue extends RealmObject {
     public String getVenueName(){ return this.venueName;}
     public void setVenueName(String venueName){this.venueName = venueName;}
 
-
     public Location getLocation(){return this.location;}
     public void setLocation(Location location){this.location = location;}
 

@@ -200,7 +200,6 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         RealmConfiguration config = new RealmConfiguration.Builder(mContext).deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(config);
 
-       // RealmConfiguration config = new RealmConfig
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
@@ -337,12 +336,7 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
        catch (IOException e){
            Log.e(LOG_TAG, "Error ", e);
        }
-       /*
-        catch (JSONException e){
-            Log.e(LOG_TAG,  e.getMessage(), e);
-            e.printStackTrace();
-        }
-        */
+
        //Close all connections and the reader
        finally{
            if (urlConnection != null){

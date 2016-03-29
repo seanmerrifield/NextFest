@@ -59,7 +59,6 @@ public class FestivalActivityFragment extends Fragment{
         });
 
 
-
         return rootView;
     }
 
