@@ -15,6 +15,7 @@ import android.widget.ListView;
 
 import com.example.android.nextfest.Activities.EventDetailActivity;
 import com.example.android.nextfest.Activities.LogInActivity;
+import com.example.android.nextfest.AsyncTasks.FetchPlaylistTask;
 import com.example.android.nextfest.MyApplication;
 import com.example.android.nextfest.R;
 import com.example.android.nextfest.SpotifyService;
@@ -97,11 +98,17 @@ public class PlaylistFragment extends Fragment {
     private void obtainPlaylist(String artistName){
         Realm realm = Realm.getDefaultInstance();
 
-        Artist artist = realm.where(Artist.class).equalTo("artistName", artistName).findFirst();
+        if (artistName == null || artistName.isEmpty()){
+            throw new NullPointerException("Artist name is empty");
+        }
+        else{
+            Artist artist = realm.where(Artist.class).equalTo("artistName", artistName).findFirst();
 
-        Log.v(LOG_TAG, "Artist ID is: " + artist.getSpotifyId());
-       // FetchArtistTask artistTask = new FetchArtistTask(getActivity());
-       // artistTask.execute(artist);
+            Log.v(LOG_TAG, "obtainPlaylist: Artist ID is " + artist.getSpotifyId());
+            FetchPlaylistTask playlistTask = new FetchPlaylistTask(getActivity());
+            playlistTask.execute(artist.getSpotifyId(), artist.getArtistName());
+        }
+
     }
 
     @Override
@@ -109,8 +116,13 @@ public class PlaylistFragment extends Fragment {
         super.onStart();
         //Get artist name from Event Detail Activity and obtain artist playlist
         String artistName = ((EventDetailActivity) getActivity()).getArtist();
-        obtainPlaylist(artistName);
-
+        Log.v(LOG_TAG, "onStart: Artist Name Obtained From Event Detail Activity is " + artistName);
+        try {
+            obtainPlaylist(artistName);
+        }
+        catch(NullPointerException e){
+            Log.e(LOG_TAG, "Artist Name is empty. Cannot obtain playlist.", e);
+        }
 
     }
 
