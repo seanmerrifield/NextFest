@@ -245,12 +245,13 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
                 realm.copyToRealmOrUpdate(venue);
                 realm.copyToRealmOrUpdate(location);
 
-                resultStrs[i] = Utility.formatDatetoString(event.getDate()) + " - " +
-                                event.getHeadliner() + " - " +
+
+                resultStrs[i] = event.getHeadliner() + " - " +
                                 event.getVenue().getVenueName() + " - " +
                                 venue.getLocation().getCity();
 
                 Log.d(LOG_TAG, resultStrs[i]);
+
             }
 
             realm.commitTransaction();
@@ -355,15 +356,4 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         return null;
    }
 
-/*
-    @Override
-    protected void onPostExecute(String[] result) {
-        if (result != null){
-            mFestivalAdapter.clear();
-            for (String eventStr : result){
-                mFestivalAdapter.add(eventStr);
-            }
-        }
-    }
-*/
 }

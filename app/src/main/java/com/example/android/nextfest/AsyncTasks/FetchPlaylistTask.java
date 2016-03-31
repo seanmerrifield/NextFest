@@ -107,8 +107,10 @@ public class FetchPlaylistTask extends AsyncTask<String, Void, String>{
                 Log.d(LOG_TAG, resultStrs[i]);
 
             }
-
+            //Save and close realm
             realm.commitTransaction();
+            realm.close();
+
             return resultStrs;
         }
         catch(JSONException e){
@@ -207,4 +209,5 @@ public class FetchPlaylistTask extends AsyncTask<String, Void, String>{
 
         return null;
     }
+
 }
