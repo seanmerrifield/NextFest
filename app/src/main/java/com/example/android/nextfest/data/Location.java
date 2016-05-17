@@ -1,14 +1,11 @@
 package com.example.android.nextfest.data;
 
 
-import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
 public class Location extends RealmObject {
-
-    private RealmList<Venue> venues;
 
     @PrimaryKey
     private long locationSetting;
@@ -21,8 +18,6 @@ public class Location extends RealmObject {
     private double latitude;
     private double longitude;
 
-    public RealmList<Venue> getVenues(){return this.venues;}
-    public void setVenues(RealmList<Venue> venues){this.venues = venues;}
 
     public long getLocationSetting(){return this.locationSetting;}
     public void setLocationSetting(long locationSetting) {this.locationSetting = locationSetting;}

@@ -7,15 +7,15 @@ import io.realm.annotations.Required;
 
 public class Artist extends RealmObject {
 
+    //Artist has many tracks
+
     @PrimaryKey
     private int id;
 
     @Required
     private String artistName;
 
-    @Required
     private String spotifyId;
-
     private String imageUrl;
 
     public int getId(){return id;}

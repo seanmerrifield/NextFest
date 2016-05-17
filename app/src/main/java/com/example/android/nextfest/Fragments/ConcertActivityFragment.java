@@ -7,18 +7,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.example.android.nextfest.EventAdapter;
 import com.example.android.nextfest.R;
-import com.example.android.nextfest.Adapters.VenueAdapter;
-import com.example.android.nextfest.data.Venue;
+import com.example.android.nextfest.data.Event;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
-import io.realm.Sort;
 
-public class VenueActivityFragment extends Fragment {
-    private VenueAdapter mVenueAdapter;
+public class ConcertActivityFragment extends Fragment {
+    private EventAdapter mConcertAdapter;
 
-    public VenueActivityFragment(){
+    public ConcertActivityFragment(){
         //Required empty constructor
     }
 
@@ -34,13 +33,13 @@ public class VenueActivityFragment extends Fragment {
 
         //Query database
         Realm realm = Realm.getDefaultInstance();
-        RealmResults<Venue> venueResult = realm.where(Venue.class).findAll();
-        venueResult.sort("venueName", Sort.ASCENDING);
+        RealmResults<Event> concertResult = realm.where(Event.class).equalTo("type", "Concert").findAll();
+        //concertResult.sort("venueName", Sort.ASCENDING);
 
         //Attach query results to adapter
-        mVenueAdapter = new VenueAdapter(getActivity(), venueResult, true);
+        mConcertAdapter = new EventAdapter(getActivity(), concertResult, true);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_venue);
-        listView.setAdapter(mVenueAdapter);
+        listView.setAdapter(mConcertAdapter);
 
 
         return rootView;

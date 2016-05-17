@@ -43,7 +43,7 @@ public class FestivalActivityFragment extends Fragment{
 
         //Retrieve event data
         Realm realm = Realm.getDefaultInstance();
-        RealmResults<Event> eventResult = realm.where(Event.class).greaterThanOrEqualTo("date",System.currentTimeMillis()).findAll();
+        RealmResults<Event> eventResult = realm.where(Event.class).equalTo("type", "Festival").greaterThanOrEqualTo("date",System.currentTimeMillis()).findAll();
         eventResult.sort("date", Sort.ASCENDING);
 
         //Attach data to list view
@@ -58,7 +58,7 @@ public class FestivalActivityFragment extends Fragment{
 
               Event event = mEventAdapter.getItem(position);
                 Intent intent = new Intent(getActivity(), EventDetailActivity.class)
-                        .putExtra("event_id", event.getId());
+                        .putExtra("event_id", event.getSongkickId());
                 startActivity(intent);
             }
         });

@@ -41,7 +41,7 @@ public class EventDetailActivity extends AppCompatActivity {
         //Retrieve artist data from event name
         int event_id = getIntent().getIntExtra("event_id", 0);
         Realm realm = Realm.getDefaultInstance();
-        Event event = realm.where(Event.class).equalTo("id", event_id).findFirst();
+        Event event = realm.where(Event.class).equalTo("songkickId", event_id).findFirst();
         mArtist = event.getHeadliner();
         //Obtain Artsit data from Spotify and add to artist model
         obtainArtist(mArtist);

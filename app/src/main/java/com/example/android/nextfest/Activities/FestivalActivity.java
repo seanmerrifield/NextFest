@@ -15,7 +15,7 @@ import android.view.MenuItem;
 
 import com.example.android.nextfest.Fragments.FestivalActivityFragment;
 import com.example.android.nextfest.R;
-import com.example.android.nextfest.Fragments.VenueActivityFragment;
+import com.example.android.nextfest.Fragments.ConcertActivityFragment;
 import com.example.android.nextfest.Adapters.ViewPagerAdapter;
 
 import io.realm.Realm;
@@ -52,8 +52,8 @@ public class FestivalActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new FestivalActivityFragment(), "Events");
-        adapter.addFragment(new VenueActivityFragment(), "Venues");
+        adapter.addFragment(new FestivalActivityFragment(), "Festivals");
+        adapter.addFragment(new ConcertActivityFragment(), "Concerts");
         viewPager.setAdapter(adapter);
     }
 
