@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.android.nextfest.data.Artist;
 import com.example.android.nextfest.data.Event;
 import com.example.android.nextfest.data.Location;
 import com.example.android.nextfest.data.Venue;
@@ -23,6 +24,7 @@ import java.net.URL;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmList;
 
 public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
 
@@ -33,11 +35,6 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
     //Initialize instance variables in constructor
     public FetchFestivalTask(Context context){
         mContext = context;
-    }
-
-    String[] parseLocationString(String locationString){
-        String delims = "[ ,]";
-        return locationString.split(delims);
     }
 
     public JSONArray getEventsJsonArray(String festivalJsonStr){
@@ -52,6 +49,26 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
             return eventsJSON.getJSONArray(EVENT_KEY);
         }
         catch (JSONException e){
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public JSONArray getPerformersJsonArray(JSONObject eventJson){
+        final String PERFORMERS_KEY = "performance";
+        try {
+            JSONArray performers = eventJson.getJSONArray(PERFORMERS_KEY);
+            if(performers.length() > 0){
+                return performers;
+            }
+            else{
+                Log.v(LOG_TAG, "Performers array is empty");
+                return null;
+            }
+        }
+        catch(JSONException e){
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
             return null;
@@ -77,31 +94,54 @@ public class FetchFestivalTask extends AsyncTask<String, Void, Void> {
         try {
 
             JSONObject eventJson;
+            JSONObject performerJson;
 
             Event event;
             Venue venue;
             Location location;
+            Artist artist;
+            RealmList<Artist> artists = new RealmList<Artist>();
 
             for (int i = 0; i < eventsArray.length(); i++) {
 
                 eventJson = eventsArray.getJSONObject(i);
 
-                location = SongKickService.createLocation(realm, eventJson, locationSetting);
+                JSONArray performersArray = getPerformersJsonArray(eventJson);
+
+                if(performersArray == null){continue;}
+                else{
+                    for(int j = 0; j < performersArray.length(); j++) {
+
+                        performerJson = performersArray.getJSONObject(j);
+                        artist = SongKickService.createArtist(realm, performerJson);
+                        if (artist == null) {
+                            continue;
+                        }
+                        realm.copyToRealmOrUpdate(artist);
+                        artists.add(artist);
+
+                    }
+
+                }
+
+                if(artists.size() == 0){continue;}
+
+                location = SongKickService.createLocation(eventJson, locationSetting);
                 if(location == null){continue;}
 
-                venue = SongKickService.createVenue(realm, eventJson, location);
+                venue = SongKickService.createVenue(eventJson, location);
                 if(venue == null){continue;}
 
-                event = SongKickService.createEvent(realm, eventJson, location, venue);
+                event = SongKickService.createEvent(eventJson, location, venue, artists);
                 if(event == null){continue;}
 
                 realm.copyToRealmOrUpdate(location);
                 realm.copyToRealmOrUpdate(venue);
                 realm.copyToRealmOrUpdate(event);
 
-                 resultStrs[i] = event.getHeadliner() + " - " +
+                 resultStrs[i] = event.getArtists().first().getArtistName() + " with " + event.getArtists().last().getArtistName() + " - " +
                                 event.getVenue().getVenueName() + " - " +
-                                event.getLocation().getCity();
+                                event.getLocation().getCity() + ", " + event.getLocation().getCountry();
 
                 Log.d(LOG_TAG, resultStrs[i]);
 

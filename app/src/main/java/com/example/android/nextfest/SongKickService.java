@@ -3,6 +3,7 @@ package com.example.android.nextfest;
 
 import android.util.Log;
 
+import com.example.android.nextfest.data.Artist;
 import com.example.android.nextfest.data.Event;
 import com.example.android.nextfest.data.Location;
 import com.example.android.nextfest.data.Venue;
@@ -12,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 
 public class SongKickService {
 
@@ -19,7 +21,7 @@ public class SongKickService {
     public SongKickService(){}
 
 
-    public static Event createEvent(Realm realm, JSONObject eventJson, Location location, Venue venue){
+    public static Event createEvent(JSONObject eventJson, Location location, Venue venue, RealmList<Artist> artists){
         final String ID_KEY = "id";
         final String EVENT_TYPE_KEY = "type";
         final String NAME_KEY = "displayName";
@@ -58,6 +60,7 @@ public class SongKickService {
             event.setTime(Utility.formatTimetoInt(dateJson.getString(TIME_KEY), "HH:mm:ss"));
             event.setVenue(venue);
             event.setLocation(location);
+            event.setArtists(artists);
             return event;
         }
         catch(JSONException e){
@@ -67,7 +70,7 @@ public class SongKickService {
         }
 
     }
-    public static Venue createVenue(Realm realm, JSONObject eventJson, Location location){
+    public static Venue createVenue(JSONObject eventJson, Location location){
         final String VENUE_KEY = "venue";
         final String NAME_KEY = "displayName";
         final String LATITUDE_KEY = "lat";
@@ -97,7 +100,7 @@ public class SongKickService {
         }
 
     }
-    public static  Location createLocation(Realm realm, JSONObject eventJson, String locationSetting){
+    public static  Location createLocation(JSONObject eventJson, String locationSetting){
 
         final String LOCATION_KEY = "location";
         final String LATITUDE_KEY = "lat";
@@ -113,7 +116,7 @@ public class SongKickService {
             String locationStr = locationJson.getString(CITY_KEY);
             String[] locationData = parseLocationString(locationStr);
             String city = locationData[0];
-            String country = locationData[1];
+            String country = locationData[2];
 
             double latitude = locationJson.getDouble(LATITUDE_KEY);
             double longitude = locationJson.getDouble(LONGITUDE_KEY);
@@ -134,7 +137,25 @@ public class SongKickService {
             return null;
         }
     }
+    public static Artist createArtist(Realm realm, JSONObject artistJson){
 
+        final String ARTIST_NAME_KEY = "displayName";
+
+        try {
+
+            String artistName = artistJson.getString(ARTIST_NAME_KEY);
+
+            Artist artist = new Artist();
+
+            artist.setArtistName(artistName);
+            return artist;
+        }
+        catch(JSONException e){
+            Log.e(SongKickService.class.getSimpleName(), e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
+    }
     public static String[] parseLocationString(String locationString){
         String delims = "[ ,]";
         return locationString.split(delims);

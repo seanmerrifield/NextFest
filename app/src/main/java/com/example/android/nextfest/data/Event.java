@@ -1,6 +1,7 @@
 package com.example.android.nextfest.data;
 
 
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
@@ -9,6 +10,9 @@ public class Event extends RealmObject{
     //Every event belongs to a venue
     private Venue venue;
     private Location location;
+
+    private RealmList<Artist> artists;
+
 
     private String type;
     private String eventName;
@@ -44,4 +48,7 @@ public class Event extends RealmObject{
 
     public Location getLocation(){return this.location;}
     public void setLocation(Location location){this.location = location;}
+
+    public RealmList<Artist> getArtists(){return this.artists;}
+    public void setArtists(RealmList<Artist> artists){this.artists = artists;}
 }

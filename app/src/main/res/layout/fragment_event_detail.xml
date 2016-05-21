@@ -8,25 +8,27 @@
     android:orientation="vertical"
     tools:context=".Fragments.EventDetailActivityFragment">
 
-    <TextView
-        android:id="@+id/event_detail_headliner_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/TextTitleWithHighlight"
-        />
+        <TextView
+            android:id="@+id/event_detail_headliner_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Headliner"
+            android:theme="@style/TextTitleWithHighlight"
+            />
 
-    <TextView
-        android:id="@+id/event_detail_venue_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/TextSubtitle"/>
+        <TextView
+            android:id="@+id/event_detail_venue_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Venue Name"
+            android:theme="@style/TextSubtitle"/>
 
-    <TextView
-        android:id="@+id/event_detail_date_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/TextSubtitle"/>
-
+        <TextView
+            android:id="@+id/event_detail_date_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:theme="@style/TextSubtitle"/>
 
 
 </LinearLayout>

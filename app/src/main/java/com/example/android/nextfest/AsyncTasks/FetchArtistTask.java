@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -34,41 +33,38 @@ public class FetchArtistTask extends AsyncTask<String, Void, String> {
         mContext = context;
     }
 
-    public Artist createOrUpdateArtist(Realm realm, HashMap artistHash){
+    public Artist createArtist(Realm realm, JSONObject artistJson){
         final String colArtistName = "artistName";
         final String colSpotifyId = "spotifyId";
         final String colImageUrl = "imageUrl";
 
-        String artistName = (String) artistHash.get(colArtistName);
-        String spotifyId = (String) artistHash.get(colSpotifyId);
-        String imageUrl = (String) artistHash.get(colImageUrl);
+        final String NAME_KEY = "name";
+        final String ID_KEY = "id";
+        final String IMAGES_KEY = "images";
+        final String IMAGE_URL_KEY = "url";
 
-        Artist artist = realm.where(Artist.class).equalTo("artistName", artistName).findFirst();
+        try {
+            String artistName = artistJson.getString(NAME_KEY);
+            String spotifyId = artistJson.getString(ID_KEY);
+            String imageUrl = artistJson.getJSONArray(IMAGES_KEY).getJSONObject(0).getString(IMAGE_URL_KEY);
 
-        //If artist doesn't exist, create new Artist and increment ID
-        if (artist == null){
-            artist = new Artist();
-            int nextId;
-            //If Artist model is empty set first id = 1
-            if (realm.where(Artist.class).max("id") == null){
-                nextId = 1;
-            }
-            //If Artist object exists then increment id
-            else{
-                nextId = realm.where(Artist.class).max("id").intValue() + 1;
-            }
-            artist.setId(nextId);
+            Artist artist = new Artist();
+
+            artist.setArtistName(artistName);
+            artist.setSpotifyId(spotifyId);
+            artist.setImageUrl(imageUrl);
+
+            return artist;
         }
-
-        artist.setArtistName(artistName);
-        artist.setSpotifyId(spotifyId);
-        artist.setImageUrl(imageUrl);
-
-        return artist;
+        catch(JSONException e){
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            return null;
+        }
 
     }
 
-    public HashMap getArtistDataFromJson(String artistJsonStr){
+    public JSONObject getArtistDataFromJson(String artistJsonStr){
         Log.d(LOG_TAG, "Starting getArtistDataFromJSon");
         final String ARTIST_KEY = "artists";
         final String ITEM_KEY = "items";
@@ -77,22 +73,12 @@ public class FetchArtistTask extends AsyncTask<String, Void, String> {
         final String IMAGE_KEY = "images";
         final String URL_KEY = "url";
 
-        //Hash Map where parsed artist data is stored
-        HashMap<String, String> artistHash = new HashMap<String, String>();
-        final String colArtistName = "artistName";
-        final String colSpotifyId = "spotifyId";
-        final String colImageUrl = "imageUrl";
-
 
         try {
             //Create artist instance from JSON
             JSONObject artistJson = new JSONObject(artistJsonStr).getJSONObject(ARTIST_KEY).getJSONArray(ITEM_KEY).getJSONObject(0);
 
-            artistHash.put(colArtistName, artistJson.getString(NAME_KEY));
-            artistHash.put(colSpotifyId, artistJson.getString(ID_KEY));
-            artistHash.put(colImageUrl, artistJson.getJSONArray(IMAGE_KEY).getJSONObject(0).getString(URL_KEY));
-
-            return artistHash;
+            return artistJson;
         }
         catch (JSONException e){
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -102,14 +88,14 @@ public class FetchArtistTask extends AsyncTask<String, Void, String> {
 
     }
 
-    public void updateDatabaseWithArtist(HashMap artistHash){
+    public void updateDatabaseWithArtist(JSONObject artistJson){
         RealmConfiguration config = new RealmConfiguration.Builder(mContext).deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(config);
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
 
-        Artist artist = createOrUpdateArtist(realm, artistHash);
+        Artist artist = createArtist(realm, artistJson);
         try {
             //Save artist object to Artist model
             realm.copyToRealmOrUpdate(artist);
@@ -159,7 +145,7 @@ public class FetchArtistTask extends AsyncTask<String, Void, String> {
             final String ARTIST_PATH = "artist";
             final String QUERY_PARAM = "q";
 
-            //Build up Uri to access API
+            //Build up Uri to access API https://api.spotify.com/v1/search?q=nero&type=artist
             Uri builtUri = Uri.parse(SPOTIFY_BASE_URL).buildUpon()
                     .appendPath(VERSION_PATH)
                     .appendPath(SEARCH_PATH)
@@ -193,12 +179,11 @@ public class FetchArtistTask extends AsyncTask<String, Void, String> {
             }
 
             artistJsonStr = buffer.toString();
-            HashMap artistData = getArtistDataFromJson(artistJsonStr);
+            JSONObject artistJson = getArtistDataFromJson(artistJsonStr);
 
-            if(artistData != null){
-                updateDatabaseWithArtist(artistData);
+            if(artistJson == null){ return null; }
 
-            }
+            updateDatabaseWithArtist(artistJson);
 
         }
         catch (IOException e){

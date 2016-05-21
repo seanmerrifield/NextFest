@@ -30,8 +30,13 @@
         android:name="com.example.android.nextfest.Fragments.PlaylistFragment"
         tools:layout="@layout/fragment_playlist"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="wrap_content" />
 
+    <fragment
+        android:id="@+id/fragment3"
+        android:name="com.example.android.nextfest.Fragments.ArtistFragment"
+        tools:layout="@layout/fragment_artist_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

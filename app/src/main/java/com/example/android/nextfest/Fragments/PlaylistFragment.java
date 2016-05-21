@@ -48,7 +48,7 @@ public class PlaylistFragment extends Fragment {
 
         mTrackAdapter = new TrackAdapter(getActivity(), trackResult, true);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_playlist);
-        listView.setAdapter(mTrackAdapter);
+        //listView.setAdapter(mTrackAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
